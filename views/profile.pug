@@ -1,0 +1,8 @@
+extends layout
+
+block content
+	div(class='text-center')
+		div(class='jumbotron center-form')
+			h4(id='username' class='nopad')= 'Username: ' +  profile
+			a(id='changePassword', href='/change-password', class='nopad blueText') Change password
+			p(id='regDate' class='nopad')= 'Date of registration: ' + regDate + ' (' + daysSinceReg + ' days since registration)'

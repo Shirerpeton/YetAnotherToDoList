@@ -1,0 +1,43 @@
+doctype html
+html
+	head
+		title= title
+		meta(charset='utf-8')
+		meta(name='viewport', content='width=device-width, initial-scale=1, shrink-to-fit=no')
+		link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css')
+		script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js')
+		script(src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.6/umd/popper.min.js')
+		script(src='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js')
+		link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css")
+		link(rel='stylesheet', href='/stylesheets/style.css')
+	body
+		nav(class='navbar navbar-expand-md greyBg navbar-dark rounded')
+			button(class='navbar-toggler', , type='button', data-toggle='collapse', data-target='#collapsibleNavbar')
+				span(class='navbar-toggler-icon')
+			div(class='collapse navbar-collapse', id='collapsibleNavbar')
+				ul(class='navbar-nav mr-auto')
+					li(class='nav-item')
+						a(class='nav-link', href='#') Main
+					li(class='nav-item')
+						a(class='nav-link', href='#') About
+				if (profile)
+					ul(class='navbar-nav ml-auto')
+						li(class='nav-item dropdown', style='margin-right: 4rem')
+							a(class='nav-link dropdown-toggle text-white rounded', id='prof', href='#', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')= profile
+							div(class='dropdown-menu greyBg', aria-labelledby='profileName')
+								div(class='text-center')
+									a(class='dropdown-item greyBg', href='/users/' + profile) Profile
+									a(class='dropdown-item greyBg', href='/logout') Logout
+				else
+					ul(class='navbar-nav ml-auto')
+						li(class='nav-item')
+							div(class='btn-group', role='group', aria-label='SignIn&SignUp')
+								if (signIn)
+									a(type='button', class='btn btn-secondary btn-dark text-white active', href='/users/sign-in', aria-pressed='true') Sign In
+								else
+									a(type='button', class='btn btn-secondary btn-dark text-white', href='/users/sign-in') Sign In
+								if (signUp)
+									a(type='button', class='btn btn-secondary btn-dark text-white active', href='/users/sign-up', aria-pressed='true') Sign Up
+								else
+									a(type='button', class='btn btn-secondary btn-dark text-white', href='/users/sign-up') Sign Up
+		block content

@@ -1,0 +1,44 @@
+extends layout
+
+block content
+	div(class='smallpad', id='userspanel')
+		div(class='jumbotron border-grey mediumpad w-100 h-100')
+			if (projUsers)
+				ul(class='blanklist', id='userList')
+					-for(var i = 0; i < projUsers.length; i++)
+						li
+							div(class='dropdown d-inline')
+								button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+								div(class='dropdown-menu greyBg')
+									a(class='dropdown-item greyBg', href='#') Delete
+							if (i === 0)
+								p(class='text-white nomar d-inline')=projUsers[0]
+							else
+								p(class='nomar greyText d-inline')= projUsers[i]
+				button(type='button', id='addUser', class='btn btn-dark btn-block') Add user to this project
+				form(id='addUserForm', class='hidden', method='post')
+					div(class='form-group row')
+						input(id='username', type='text', class='col-10 form-control', name='username', placeholder='Username', required,  oninvalid="this.setCustomValidity('Please Enter Username')"
+ oninput="setCustomValidity('')")
+						button(type='submit', class='col-2 btn btn-dark btn-block', id='submitUser') +
+						div(class='invalid-feedback', id='invUsername') Invalid username!
+	div(class='smallpad' id='projectpanel')
+		div(class='jumbotron border-grey mediumpad w-100 h-100')
+			if (projs)
+				ul(class='blanklist', id='projectList')
+					each proj in projs
+						li
+							div(class='dropdown d-inline')
+								button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+								div(class='dropdown-menu greyBg')
+									a(class='dropdown-item greyBg', href='#') Delete
+							a(class='mylink d-inline pad-left', data-projId=proj.id, href='/projects/' + proj.id + '/')= proj.name
+			button(type='button', id='addProj', class='btn btn-dark btn-block') Add project
+			form(id='addProjForm', class='hidden', method='post')
+				div(class='form-group row')
+					input(id='projName', type='text', class='col-10 form-control', name='projName', placeholder='Project name', required,  oninvalid="this.setCustomValidity('Please Enter Project Name')"
+ oninput="setCustomValidity('')")
+					button(type='submit', class='col-2 btn btn-dark btn-block', id='submitProj') +
+	div(class='smallpad', id='workspace')
+		div(class='jumbotron border-grey mediumpad w-100 h-100')
+	script(src='/javascripts/index.js')

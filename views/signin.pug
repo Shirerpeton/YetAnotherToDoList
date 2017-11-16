@@ -1,0 +1,21 @@
+extends layout
+
+block content
+	div(class='text-center')
+		div(class='jumbotron center-form')
+			form(method='post', id='signInForm')
+				h2(class='greyText') Sign In
+				div(class='form-group')
+					label(for='login', class='greyText') Username:
+					input(id='username', type='text', class='form-control', name='login', placeholder='Username', required,  oninvalid="this.setCustomValidity('Please Enter Your Username')"
+ oninput="setCustomValidity('')")
+					div(class='invalid-feedback') User do not exist!
+				div(class='form-group')
+					label(for='password', class='greyText') Password:
+					input(id='password', type='password', class='form-control', name='password', placeholder='Password', required,  oninvalid="this.setCustomValidity('Please Enter Your Password')", 
+ oninput="setCustomValidity('')")
+					div(class='invalid-feedback') Invalid password!
+				div(class='form-group')
+					button(type='submit', class='btn btn-dark btn-block') Login
+	script(src='../javascripts/sign-in.js')
+			
