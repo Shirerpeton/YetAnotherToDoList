@@ -12,6 +12,24 @@ router.get('/', function(req, res, next) {
 		res.redirect('../../../');
 });
 
+router.get('/ctfu', function(req, res, next){
+	db.query('create table users (username varchar(20) NOT NULL, registration date NOT NULL, passwordHash varchar(60) NOT NULL, primary key(username))', function(err){
+		if (err) throw err;
+	});
+});
+
+router.get('/ctfp', function(req, res, next){
+	db.query('create table projects (projectId int(11) NOT NULL auto_increment, projectName varchar(50) NOT NULL, primary key(projectId))', function(err){
+		if (err) throw err;
+	});
+});
+
+router.get('/cat', function(req, res, next){
+	db.query('create table usersProjects (username varchar(20) references users (username), projectId int(11) references projects (projectId), primary key(username, projectId))', function(err){
+		if (err) throw err;
+	});
+});
+
 router.post('/', function(req, res, next){
 	var login = req.body.username;
 	var password = req.body.password;
