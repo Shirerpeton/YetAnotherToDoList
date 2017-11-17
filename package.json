@@ -15,7 +15,7 @@
     "express-session": "^1.15.6",
     "md5": "^2.2.1",
     "morgan": "~1.9.0",
-    "mysql": "^2.15.0",
+    "mssql": "^4.1.0",
     "pug": "2.0.0-beta11",
     "serve-favicon": "~2.4.5"
   }

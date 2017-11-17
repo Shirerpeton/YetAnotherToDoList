@@ -9,7 +9,7 @@ function submitForm()
 	var formData = { "username": $('#username').val(), "password": $('#password').val(), "repPassword": $('#repPassword').val()};
 	$.ajax({
         type: 'POST',
-        url: '../../../users/sign-up',
+        url: '/users/sign-up',
         data: formData,
         success : function(response){
             if (response.username === 'long')
@@ -47,7 +47,7 @@ function submitForm()
 					$('#invPass').text('');
 					$('#invRepPass').text('Passwords must match!');
 				}
-				else
+				else if (response.password === true)
 				{
 					$('#password').attr('class', 'form-control is-valid');
 					$('#repPassword').attr('class', 'form-control is-valid');

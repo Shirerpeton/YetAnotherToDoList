@@ -79,10 +79,14 @@ function submitUserForm()
 				$('#username').attr('class', 'col-10 form-control is-invalid');
 				$('#invUsername').text('User does not exist!');
 			}
-			else if (response.user === 'already in proj')
+			else if (response.user === 'already in the proj')
 			{
 				$('#username').attr('class', 'col-10 form-control is-invalid');
 				$('#invUsername').text('User already in this project!');
+			}
+			else if (response.user === false)
+			{
+				window.location.replace('/');
 			}
 			else
 			{
