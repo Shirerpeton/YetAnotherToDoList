@@ -24,7 +24,7 @@ function promiseBycryptCompare(text, hash)
 	});
 }
 
-function promiseSessionSafe(session)
+function promiseSessionSave(session)
 {
 	return new Promise((resolve, reject) => {
 		session.save(err => {
@@ -51,7 +51,7 @@ router.post('/', async (req, res, next) => {
 			if (resultOfComp)
 			{
 				req.session.user = login;
-				await promiseSessionSafe(req.session);
+				await promiseSessionSave(req.session);
 				res.json({ username: true, password: true });
 			} 
 			else

@@ -1,8 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var bcrypt = require('bcrypt');
+<<<<<<< HEAD
 var sql = require('mssql');
 var config = require('../bin/db.js');
+=======
+var db = require('../bin/db.js');
+>>>>>>> 00fdd42f8974f6701d5ba99fdbb4b0b648e22aa7
 
 const saltRounds = 10;
 
