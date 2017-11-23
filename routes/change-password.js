@@ -1,19 +1,13 @@
-var express = require('express');
-var router = express.Router();
-var bcrypt = require('bcrypt');
-<<<<<<< HEAD
-var sql = require('mssql');
-var config = require('../bin/db.js');
-=======
-var db = require('../bin/db.js');
->>>>>>> 00fdd42f8974f6701d5ba99fdbb4b0b648e22aa7
-
-const saltRounds = 10;
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('../bin/bcryptPromise.js');
+const sql = require('mssql');
+const db = require('../bin/db.js');
 
 router.get('/', function(req, res, next) {
-	var login = req.session.user;
+	let login = req.session.user;
 	if (login)
-		res.render('change-password', { profile: login });
+		res.render('change-password', { title: 'Change assoword', profile: login });
 	else
 		res.redirect('/');
 });
@@ -28,28 +22,19 @@ function promiseBycryptCompare(text, hash)
 	});
 }
 
-function promiseBycryptHash(text, saltRounds)
-{
-	return new Promise((resolve, reject) => {
-		bcrypt.hash(text, saltRounds, (err, hash) => {
-			if (err) reject(err);
-			else resolve(hash);
-		});
-	});
-}
-
 router.post('/', async (req, res, next) => {
 	try {
 		const login = req.session.user;
 		const password = req.body.password;
 		const newPassword = req.body.newPassword;
 		const repNewPassword = req.body.repNewPassword;
-		let pool = await sql.connect(config);
+		let pool = new sql.ConnectionPool(db.config);
+		await pool.connect();
 		const result = await pool.request()
 		.input('login', sql.VarChar(20), login)
 		.query('select users.passwordHash from users where username = @login');
-		sql.close();
-		const resultOfComp = await promiseBycryptCompare(password, result.recordset[0].passwordHash);
+		pool.close();
+		const resultOfComp = await bcrypt.promiseCompare(password, result.recordset[0].passwordHash);
 		if (resultOfComp)
 		{
 			if (newPassword !== repNewPassword)
@@ -58,13 +43,14 @@ router.post('/', async (req, res, next) => {
 				res.json({password: true, newPassword: "short"});
 			else
 			{
-				const hash = await promiseBycryptHash(newPassword, saltRounds);
-				pool = await sql.connect(config);
+				const hash = await bcrypt.promiseHash(newPassword);
+				pool = new sql.ConnectionPool(db.config);
+				await pool.connect();
 				await pool.request()
 				.input('login', sql.VarChar(20), login)
 				.input('passwordHash', sql.VarChar(60), login)
 				.query('update users set passwordHash = @passwordHash where username = @login');
-				sql.close();
+				pool.close();
 				res.json({password: true, newPassword: true});
 			}
 		}

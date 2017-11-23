@@ -6,12 +6,12 @@ $("#signUpForm").submit(function(event){
 
 function submitForm()
 {
-	var formData = { "username": $('#username').val(), "password": $('#password').val(), "repPassword": $('#repPassword').val()};
+	const formData = { "username": $('#username').val(), "password": $('#password').val(), "repPassword": $('#repPassword').val()};
 	$.ajax({
         type: 'POST',
         url: '/users/sign-up',
         data: formData,
-        success : function(response){
+        success : (response) => {
             if (response.username === 'long')
 			{
 				$('#username').attr('class', 'form-control is-invalid');
