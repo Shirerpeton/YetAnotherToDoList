@@ -210,7 +210,7 @@ router.post('/projects/:projId/users', async (req, res, next) => {
 		console.log(err);
 	}
 });
-
+/*
 router.delete('/projects/:projId', (req, res, next) => {
 	try {
 		const login = req.session.user;
@@ -231,7 +231,7 @@ router.delete('/projects/:projId', (req, res, next) => {
 	} catch (err) {
 		console.log(err);
 	}
-});
+});*/
 
 router.delete('/projects/:projId', function(req, res, next){
 	const login = req.session.user;

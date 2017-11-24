@@ -26,11 +26,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.set('trust proxy', 1);
 
 app.use(session({
     secret: 'someSecret',
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+	//cookie: { secure: true }
 }));
 
 app.use('/', index);

@@ -20,30 +20,19 @@ router.get('/', function(req, res, next) {
 	}
 });
 
-function promiseSessionSave(session)
-{
-	return new Promise((resolve, reject) => {
-		session.save(err => {
-			if (err) reject(err);
-			else resolve();
-		});
-	});
-}
-
 router.post('/', async (req, res, next) => {
 	try {
 		const login = req.body.username;
 		const password = req.body.password;
 		const result = await db.getUserByUsername(login);
-		if (result.recordset.length === 0)
+		if (!result)
 			res.json({ username: false, password: false });
 		else
 		{
-			const resultOfComp = await bcrypt.promiseCompare(password, result.recordset[0].passwordHash);
+			const resultOfComp = await bcrypt.promiseCompare(password, result.passwordHash);
 			if (resultOfComp)
 			{
 				req.session.user = login;
-				await promiseSessionSave(req.session);
 				res.json({ username: true, password: true });
 			} 
 			else
