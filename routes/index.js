@@ -21,9 +21,9 @@ router.get('/projects', async(req, res, next) => {
 	try {
 		const login = req.session.user;
 		if (login !== undefined)
-			res.json({projects: await db.getProjectsOfUser(login)});
+			res.json({error: null, projects: await db.getProjectsOfUser(login)});
 		else
-			res.redirect('/');
+			res.json({error: 'You are not logged!'});
 	} catch (err) {
 		console.log(err);
 	}

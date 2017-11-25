@@ -52,7 +52,7 @@ describe('/users/sign-up', () => {
 			it('redirects to main page', done => {
 				sandbox.stub(db, 'getUserByUsername').withArgs('testUsername').returns({username: 'testUsername', passwordHash: 'testHash'});
 				sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
-				let agent = chai.request.agent(server)
+				let agent = chai.request.agent(server);
 				agent
 				.post('/users/sign-in')
 				.send({username: 'testUsername', password: 'testPassword'})
