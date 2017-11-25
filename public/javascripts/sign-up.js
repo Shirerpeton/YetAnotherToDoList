@@ -7,10 +7,17 @@ $("#signUpForm").submit(function(event){
 function submitForm()
 {
 	const formData = { "username": $('#username').val(), "password": $('#password').val(), "repPassword": $('#repPassword').val()};
-	if (formData.username.length > 20)
+	if (formData.username.length < 4)
 	{
 		$('#username').attr('class', 'form-control is-invalid');
-		$('#invUsername').text('Username must be no more than 20 characters long');
+		$('#invUsername').text('Username must be no less than 4 characters long!');
+		$('#password').attr('class', 'form-control');
+		$('#repPassword').attr('class', 'form-control');
+	}
+	else if (formData.username.length > 20)
+	{
+		$('#username').attr('class', 'form-control is-invalid');
+		$('#invUsername').text('Username must be no more than 20 characters long!');
 		$('#password').attr('class', 'form-control');
 		$('#repPassword').attr('class', 'form-control');
 	}

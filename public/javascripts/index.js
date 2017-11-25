@@ -55,7 +55,7 @@ function addUser(user) {
 	divDrop.attr('class', 'dropdown d-inline');
 	divDrop.append(btn, divDropMenu);
 	let username = "<p class='greyText nomar d-inline'>" + user + "</p>";
-	$('<li></li>').appendTo('#userList').append(divDrop, username);
+	$('<li></li>').appendTo('#userList').append(divDrop, user.username);
 }
 
 function loadProjects() {
@@ -71,8 +71,7 @@ function loadProjects() {
 }
 
 loadProjects();
-const reg = /projects\/\d*/;
-if (reg.test(window.location) !== -1)
+if (/projects\/\d*/.test(window.location) !== -1)
 	loadUsers();
 
 function loadUsers() {
@@ -100,12 +99,6 @@ function deleteProj(event)
 		}
 	});
 }
-
-/* var list = $('#userList').children();
-for (var i = 0; i < list.length; i++)
-{
-	list.eq(i).children().eq(0).children().eq(1).children().eq(0).click(deleteUser);
-} */
 
 function deleteUser(event)
 {

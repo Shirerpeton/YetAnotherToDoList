@@ -75,7 +75,7 @@ describe('/users/sign-up', () => {
 			it('register new user', done => {
 				chai.request(server)
 				.post('/users/sign-up')
-				.send({username: 'anotherUsername', password: 'testPassword'})
+				.send({username: 'anotherUsername', password: 'testPassword', repPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.null;
 					expect(request.query.calledOnce).to.be.true;
@@ -83,11 +83,71 @@ describe('/users/sign-up', () => {
 				}).then(done).catch(console.log);
 			});
 		});
-		describe('with wrong login', () => {
+		describe('with with too short login', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
 				.post('/users/sign-up')
-				.send({username: 'testUsername', password: 'testPassword'})
+				.send({username: 'use', password: 'testPassword', repPassword: 'testPassword'})
+				.then(res => {
+					expect(res.body.error).to.be.equal("Username must be no less than 4 characters long!");
+					expect(request.query.called).to.be.false;
+					expect(bcrypt.promiseHash.called).to.be.false;
+				}).then(done).catch(console.log);
+			});
+		});
+		describe('with with too long login', () => {
+			it('send json with proper error', (done) => {
+				chai.request(server)
+				.post('/users/sign-up')
+				.send({username: 'definetlyMoreThanRequired20CharacterLongUsername', password: 'testPassword', repPassword: 'testPassword'})
+				.then(res => {
+					expect(res.body.error).to.be.equal("Username must be no more than 20 characters long!");
+					expect(request.query.called).to.be.false;
+					expect(bcrypt.promiseHash.called).to.be.false;
+				}).then(done).catch(console.log);
+			});
+		});
+		describe('with with too short password', () => {
+			it('send json with proper error', (done) => {
+				chai.request(server)
+				.post('/users/sign-up')
+				.send({username: 'anotherUsername', password: 'test', repPassword: 'test'})
+				.then(res => {
+					expect(res.body.error).to.be.equal("Password must be at least 6 characters long!");
+					expect(request.query.called).to.be.false;
+					expect(bcrypt.promiseHash.called).to.be.false;
+				}).then(done).catch(console.log);
+			});
+		});
+		describe('with with too long password', () => {
+			it('send json with proper error', (done) => {
+				chai.request(server)
+				.post('/users/sign-up')
+				.send({username: 'anotherUsername', password: 'definetlyMoreThanRequired20CharacterLongPassowrd', repPassword: 'definetlyMoreThanRequired20CharacterLongPassowrd'})
+				.then(res => {
+					expect(res.body.error).to.be.equal("Password must be no more than 20 characters long!");
+					expect(request.query.called).to.be.false;
+					expect(bcrypt.promiseHash.called).to.be.false;
+				}).then(done).catch(console.log);
+			});
+		});
+		describe('with with passwords that do not match', () => {
+			it('send json with proper error', (done) => {
+				chai.request(server)
+				.post('/users/sign-up')
+				.send({username: 'anotherUsername', password: 'testPassword', repPassword: 'anotherPassword'})
+				.then(res => {
+					expect(res.body.error).to.be.equal("Passwords must match!");
+					expect(request.query.called).to.be.false;
+					expect(bcrypt.promiseHash.called).to.be.false;
+				}).then(done).catch(console.log);
+			});
+		});
+		describe('with already taken login', () => {
+			it('send json with proper error', (done) => {
+				chai.request(server)
+				.post('/users/sign-up')
+				.send({username: 'testUsername', password: 'testPassword', repPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("That username is already taken!");
 					expect(request.query.called).to.be.false;

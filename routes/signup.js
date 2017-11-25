@@ -27,21 +27,34 @@ router.post('/', async (req, res, next) => {
 		const login = req.body.username;
 		const password = req.body.password;
 		const repPassword = req.body.repPassword;
-		let result = await db.getUserByUsername(login);
-		if (result)
-			res.json({error: "That username is already taken!"});
-		else
+		if (login.length < 4)
+			res.json({error: "Username must be no less than 4 characters long!"});
+		else if (login.length > 20)
+			res.json({error: "Username must be no more than 20 characters long!"});
+		else if (password.length < 6)
+			res.json({error: "Password must be at least 6 characters long!"});
+		else if (password.length > 20)
+			res.json({error: "Password must be no more than 20 characters long!"});
+		else if (password !== repPassword)
+			res.json({error: "Passwords must match!"});
+		else 
 		{
-			const hash = await bcrypt.promiseHash(password);
-			pool = new sql.ConnectionPool(db.config);
-			await pool.connect();
-			await pool.request()
-			.input('login', sql.VarChar(20), login)
-			.input('pswHash', sql.VarChar(60), hash)
-			.input('regDate', sql.Date, new Date().toISOString().slice(0, 19).replace('T', ' '))
-			.query('insert into users (username, passwordHash, registration) values (@login, @pswHash, @regDate)');
-			pool.close();
-			res.json({error: null});				
+			let result = await db.getUserByUsername(login);
+			if (result)
+				res.json({error: "That username is already taken!"});
+			else
+			{
+				const hash = await bcrypt.promiseHash(password);
+				pool = new sql.ConnectionPool(db.config);
+				await pool.connect();
+				await pool.request()
+				.input('login', sql.VarChar(20), login)
+				.input('pswHash', sql.VarChar(60), hash)
+				.input('regDate', sql.Date, new Date().toISOString().slice(0, 19).replace('T', ' '))
+				.query('insert into users (username, passwordHash, registration) values (@login, @pswHash, @regDate)');
+				pool.close();
+				res.json({error: null});				
+			}
 		}
 	} catch (err) {
 		console.log(err);
