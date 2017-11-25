@@ -12,7 +12,6 @@ router.get('/', function(req, res, next) {
 		res.redirect('/');
 });
 
-
 router.get('/info', (req, res, next) => {
 	const pool = new sql.ConnectionPool(db.config);
 		pool.connect(err => {
@@ -28,37 +27,21 @@ router.post('/', async (req, res, next) => {
 		const login = req.body.username;
 		const password = req.body.password;
 		const repPassword = req.body.repPassword;
-		if (login.length > 20)
-			res.json({ username: 'long', password: false });
+		let result = await db.getUserByUsername(login);
+		if (result)
+			res.json({error: "That username is already taken!"});
 		else
 		{
-			let pool = new sql.ConnectionPool(db.config);
+			const hash = await bcrypt.promiseHash(password);
+			pool = new sql.ConnectionPool(db.config);
 			await pool.connect();
-			let result = await pool.request()
+			await pool.request()
 			.input('login', sql.VarChar(20), login)
-			.query('select * from users where username = @login');
+			.input('pswHash', sql.VarChar(60), hash)
+			.input('regDate', sql.Date, new Date().toISOString().slice(0, 19).replace('T', ' '))
+			.query('insert into users (username, passwordHash, registration) values (@login, @pswHash, @regDate)');
 			pool.close();
-			if (result.recordset.length !== 0)
-				res.json({username: false, password: false});
-			else if (password.length < 6)
-				res.json({username: true, password: "short"});
-			else if (password.length > 20)
-				res.json({username: true, password: "long"});
-			else if (password !== repPassword)
-				res.json({username: true, password: "diff"});
-			else
-			{
-				const hash = await bcrypt.promiseHash(password);
-				pool = new sql.ConnectionPool(db.config);
-				await pool.connect();
-				await pool.request()
-				.input('login', sql.VarChar(20), login)
-				.input('pswHash', sql.VarChar(60), hash)
-				.input('regDate', sql.Date, new Date().toISOString().slice(0, 19).replace('T', ' '))
-				.query('insert into users (username, passwordHash, registration) values (@login, @pswHash, @regDate)');
-				pool.close();
-				res.json({username: true, password: true});				
-			}
+			res.json({error: null});				
 		}
 	} catch (err) {
 		console.log(err);

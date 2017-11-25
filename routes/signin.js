@@ -26,17 +26,17 @@ router.post('/', async (req, res, next) => {
 		const password = req.body.password;
 		const result = await db.getUserByUsername(login);
 		if (!result)
-			res.json({ username: false, password: false });
+			res.json({ error: 'That user do not exist!' });
 		else
 		{
 			const resultOfComp = await bcrypt.promiseCompare(password, result.passwordHash);
 			if (resultOfComp)
 			{
 				req.session.user = login;
-				res.json({ username: true, password: true });
+				res.json({ error: null });
 			} 
 			else
-				res.json({ username: true, password: false });
+				res.json({ error: 'Invalid password!' });
 		}
 	} catch (err) {
 		console.log(err);

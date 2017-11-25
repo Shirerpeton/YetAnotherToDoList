@@ -12,15 +12,15 @@ function submitForm()
         url: '/users/sign-in',
         data: formData,
         success : function(response){
-            if (!response.username)
+            if (response.error === 'That user do not exist!')
 			{
 				$('#username').attr('class', 'form-control is-invalid');
 				$('#password').attr('class', 'form-control');
 			}
-			else
+			else 
 			{
 				$('#username').attr('class', 'form-control is-valid');
-				if (!response.password)
+				if (response.error === 'Invalid password!')
 					$('#password').attr('class', 'form-control is-invalid');
 				else
 				{

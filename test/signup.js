@@ -15,19 +15,32 @@ chai.use(chaiAsPromised);
 var sandbox = sinon.sandbox.create();
 var server;
 
-describe('/users/sign-in', () => {
+var request = {
+	input: function() { return this; } ,
+	query: sandbox.stub()
+};
+
+var pool = {
+	connect: sandbox.spy(),
+	request: () => { return request; },
+	close: sandbox.spy()
+};
+
+describe('/users/sign-up', () => {
 	afterEach('restore sandbox and restart server', () => {
 		sandbox.restore();
+		request.query.reset();
 		server.close();
 	});
 	beforeEach('starting server', () => {
+		sandbox.stub(sql, 'ConnectionPool').returns(pool);
 		server = require('../bin/www');
 	});
 	describe('get', () => {
 		describe('while not logged', done => {
-			it('responds with sign-in page', done => {
+			it('responds with sign-up page', done => {
 				chai.request(server)
-				.get('/users/sign-in')
+				.get('/users/sign-up')
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res).to.have.status(200);
@@ -46,7 +59,7 @@ describe('/users/sign-in', () => {
 				.then(res => {
 					expect(res.body.error).to.be.null;
 				}).then(() => {
-					return agent.get('/users/sign-in').redirects(0)
+					return agent.get('/users/sign-up').redirects(0)
 				}).catch(err => {
 					expect(err.response).to.have.status(302).and.header('Location', '/');
 				}).then(done).catch(console.log);
@@ -56,42 +69,30 @@ describe('/users/sign-in', () => {
 	describe('post', () => {
 		beforeEach('stub functions', () => {
 			sandbox.stub(db, 'getUserByUsername').withArgs('testUsername').returns({username: 'testUsername', passwordHash: 'testHash'});
-			sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
+			sandbox.stub(bcrypt, 'promiseHash').withArgs('testPassword').returns('testHash');
 		});
 		describe('with proper data', () => {
-			it('loggs user into system', done => {
+			it('register new user', done => {
 				chai.request(server)
-				.post('/users/sign-in')
-				.send({username: 'testUsername', password: 'testPassword'})
-				.end((err, res) => {
-					expect(err).to.be.null;
+				.post('/users/sign-up')
+				.send({username: 'anotherUsername', password: 'testPassword'})
+				.then(res => {
 					expect(res.body.error).to.be.null;
-					done();
-				});
+					expect(request.query.calledOnce).to.be.true;
+					expect(bcrypt.promiseHash.calledWith('testPassword')).to.be.true;
+				}).then(done).catch(console.log);
 			});
 		});
 		describe('with wrong login', () => {
-			it('send json with proper error', done => {
+			it('send json with proper error', (done) => {
 				chai.request(server)
-				.post('/users/sign-in')
-				.send({username: 'wrongUsername', password: 'testPassword'})
-				.end((err, res) => {
-					expect(err).to.be.null;
-					expect(res.body.error).to.be.equal('That user do not exist!');
-					done();
-				});
-			});
-		});
-		describe('with wrong password', () => {
-			it('send json with proper error', done => {
-				chai.request(server)
-				.post('/users/sign-in')
-				.send({username: 'testUsername', password: 'wrongPassword'})
-				.end((err, res) => {
-					expect(err).to.be.null;
-					expect(res.body.error).to.be.equal('Invalid password!');
-					done();
-				});
+				.post('/users/sign-up')
+				.send({username: 'testUsername', password: 'testPassword'})
+				.then(res => {
+					expect(res.body.error).to.be.equal("That username is already taken!");
+					expect(request.query.called).to.be.false;
+					expect(bcrypt.promiseHash.called).to.be.false;
+				}).then(done).catch(console.log);
 			});
 		});
 	});

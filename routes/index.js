@@ -9,18 +9,21 @@ router.get('/', async (req, res, next) => {
 	try {
 		const login = req.session.user;
 		if (login !== undefined)
-		{
-			const result = await db.getProjectsOfUser(login);
-			let projs = [];
-			for (let i = 0; i < result.length; i++)
-			{
-				let proj = { name: result[i]['projectName'], id: result[i]['projectId'] };
-				projs.push(proj);
-			}
-			res.render('index', {title: 'Yet Another ToDo List', profile: login, projs: projs });
-		}
+			res.render('index', {title: 'Yet Another ToDo List', profile: login});
 		else
 			res.render('layout', {title: 'Yet Another ToDo List'});
+	} catch (err) {
+		console.log(err);
+	}
+});
+
+router.get('/projects', async(req, res, next) => {
+	try {
+		const login = req.session.user;
+		if (login !== undefined)
+			res.json({projects: await db.getProjectsOfUser(login)});
+		else
+			res.redirect('/');
 	} catch (err) {
 		console.log(err);
 	}
@@ -78,28 +81,59 @@ router.get('/projects/:projId', async (req, res, next) => {
 		else 
 		{
 			const projId = Number(req.params.projId);
-			let result = await db.getProjectsOfUser(login);
-			let projs = [];
+			const projects = await db.getProjectsOfUser(login);
 			let projExist = false;
-			for (let i = 0; i < result.length; i++)
+			for (let i = 0; i < projects.length; i++)
 			{
-				let proj = { name: result[i]['projectName'], id: result[i]['projectId'] };
-				projs.push(proj);
-				if (proj.id === projId)
+				if (projects[i].projectId === projId)
 					projExist = true;
 			}
 			if (!projExist)
 				res.redirect('/');
 			else 
 			{
-				result = await db.getUsersOfProject(projId);
+				const users = await db.getUsersOfProject(projId);
 				let projUsers = [login];
-				for(let j = 0; j < result.length; j++)
+				for(let j = 0; j < users.length; j++)
 				{
-					if (result[j]['username'] !== login)
-						projUsers.push(result[j]['username']);
+					if (users[j]['username'] !== login)
+						projUsers.push(users[j]['username']);
 				}
-				res.render('index', { title: 'Yet Another ToDo List', profile: login, projs: projs, projUsers: projUsers });
+				res.render('index', { title: 'Yet Another ToDo List', profile: login, projs: projects, projUsers: projUsers });
+			}
+		}
+	} catch (err) {
+		console.log(err);
+	}
+});
+
+router.get('/projects/:projId/users', async (req, res, next) => {
+	try {
+		const login = req.session.user;
+		if (login === undefined)
+			res.redirect('/');
+		else 
+		{
+			const projId = Number(req.params.projId);
+			const projects = await db.getProjectsOfUser(login);
+			let projExist = false;
+			for (let i = 0; i < projects.length; i++)
+			{
+				if (projects[i].projectId === projId)
+					projExist = true;
+			}
+			if (!projExist)
+				res.redirect('/');
+			else 
+			{
+				const users = await db.getUsersOfProject(projId);
+				let projUsers = [login];
+				for(let j = 0; j < users.length; j++)
+				{
+					if (users[j]['username'] !== login)
+						projUsers.push(users[j]['username']);
+				}
+				res.json({error: null, users: projUsers});
 			}
 		}
 	} catch (err) {
@@ -114,7 +148,7 @@ router.post('/projects', async (req, res, next) => {
 			res.json({error: 'You are not logged!'})
 		else
 		{
-			let projName = req.body.projName;
+			const projName = req.body.projName;
 			const pool = new sql.ConnectionPool(db.config);
 			await pool.connect();
 			let transaction = pool.transaction();
@@ -129,7 +163,7 @@ router.post('/projects', async (req, res, next) => {
 				.input('projId', sql.Int, result.recordset[0].id)
 				.query('insert into usersProjects (username, projectId) values (@login, @projId)');
 				await transaction.commit();
-				res.json({ error: null, projId: result.recordset[0].id });
+				res.json({ error: null, projectId: result.recordset[0].id , projectName: projName});
 			} catch (err) {
 				console.log(err);
 				try {
@@ -144,6 +178,8 @@ router.post('/projects', async (req, res, next) => {
 		console.log(err);
 	}
 });
+
+
 
 router.post('/projects/:projId/users', async (req, res, next) => {
 	try {
@@ -200,7 +236,7 @@ router.post('/projects/:projId/users', async (req, res, next) => {
 							.input('projId', sql.Int, projId)
 							.query('insert into usersProjects (username, projectId) values (@username, @projId)');
 							pool.close();
-							res.json({error: null});
+							res.json({error: null, username: username});
 						}
 					}
 				}

@@ -7,53 +7,49 @@ $("#signUpForm").submit(function(event){
 function submitForm()
 {
 	const formData = { "username": $('#username').val(), "password": $('#password').val(), "repPassword": $('#repPassword').val()};
-	$.ajax({
-        type: 'POST',
-        url: '/users/sign-up',
-        data: formData,
-        success : (response) => {
-            if (response.username === 'long')
-			{
-				$('#username').attr('class', 'form-control is-invalid');
-				$('#invUsername').text('Username must be no more than 20 characters long');
-				$('#password').attr('class', 'form-control');
-				$('#repPassword').attr('class', 'form-control');
-			} else if (!response.username)
-			{
-				$('#username').attr('class', 'form-control is-invalid');
-				$('#invUsername').text('This username is already taken!');
-				$('#password').attr('class', 'form-control');
-				$('#repPassword').attr('class', 'form-control');
-			}
-			else
-			{
-				$('#username').attr('class', 'form-control is-valid');
-				if (response.password === 'short')
+	if (formData.username.length > 20)
+	{
+		$('#username').attr('class', 'form-control is-invalid');
+		$('#invUsername').text('Username must be no more than 20 characters long');
+		$('#password').attr('class', 'form-control');
+		$('#repPassword').attr('class', 'form-control');
+	}
+	else if (formData.password.length < 6)
+	{
+		$('#password').attr('class', 'form-control is-invalid');
+		$('#invPass').text('Password must be at least 6 characters long!');
+		$('#repPassword').attr('class', 'form-control');
+	} else if (formData.password.length > 20)
+	{
+		$('#password').attr('class', 'form-control is-invalid');
+		$('#invPass').text('Password must be no more than 20 characters long!');
+		$('#repPassword').attr('class', 'form-control');
+	} else if (formData.password !== formData.repPassword)
+	{
+		$('#password').attr('class', 'form-control is-invalid');
+		$('#repPassword').attr('class', 'form-control is-invalid');
+		$('#invPass').text('');
+		$('#invRepPass').text('Passwords must match!');
+	} else
+		$.ajax({
+			type: 'POST',
+			url: '/users/sign-up',
+			data: formData,
+			success : (response) => {
+				if (response.error === 'That username is already taken!')
 				{
-					$('#password').attr('class', 'form-control is-invalid');
-					$('#invPass').text('Password must be at least 6 characters long!');
+					$('#username').attr('class', 'form-control is-invalid');
+					$('#invUsername').text(response.error);
+					$('#password').attr('class', 'form-control');
 					$('#repPassword').attr('class', 'form-control');
 				}
-				if (response.password === 'long')
+				else if (response.error === null)
 				{
-					$('#password').attr('class', 'form-control is-invalid');
-					$('#invPass').text('Password must be no more than 20 characters long!');
-					$('#repPassword').attr('class', 'form-control');
-				}
-				else if (response.password === 'diff')
-				{
-					$('#password').attr('class', 'form-control is-invalid');
-					$('#repPassword').attr('class', 'form-control is-invalid');
-					$('#invPass').text('');
-					$('#invRepPass').text('Passwords must match!');
-				}
-				else if (response.password === true)
-				{
+					$('#username').attr('class', 'form-control is-valid');
 					$('#password').attr('class', 'form-control is-valid');
 					$('#repPassword').attr('class', 'form-control is-valid');
 					window.location.replace('/');
 				}
 			}	
-		}
-	});
+		});
 }

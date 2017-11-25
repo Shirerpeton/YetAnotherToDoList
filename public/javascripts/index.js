@@ -1,3 +1,5 @@
+'use strict';
+
 $("#addProj").click(function(){
 	$('#addProj').slideToggle();
 	$('#addProjForm').hide();
@@ -24,10 +26,65 @@ $("#addUserForm").submit(function(event){
 	submitUserForm();
 });
 
-var list = $('#projectList').children();
-for (var i = 0; i < list.length; i++)
-{
-	list.eq(i).children().eq(0).children().eq(1).children().eq(0).click(deleteProj);
+function addProject(project) {
+	let delLink = $('<a></a>').text('Delete');
+	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
+	delLink.click(deleteProj);
+	let divDropMenu = $('<div></div>');
+	divDropMenu.attr('class', 'dropdown-menu greyBg');
+	divDropMenu.append(delLink);
+	let btn = $('<button></button>');
+	btn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	let divDrop = $('<div></div>');
+	divDrop.attr('class', 'dropdown d-inline ');
+	divDrop.append(btn, divDropMenu);
+	let projNameLink = "<a class='mylink pad-left d-inline' data-projId=" + project.projectId + " href='/projects/" + project.projectId + "/'>" + project.projectName + "</a>";
+	$('<li></li>').appendTo('#projectList').append(divDrop, projNameLink);
+}
+
+function addUser(user) {
+	let delLink = $('<a></a>').text('Delete');
+	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
+	delLink.click(deleteUser);
+	let divDropMenu = $('<div></div>');
+	divDropMenu.attr('class', 'dropdown-menu greyBg');
+	divDropMenu.append(delLink);
+	let btn = $('<button></button>');
+	btn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	let divDrop = $('<div></div>');
+	divDrop.attr('class', 'dropdown d-inline');
+	divDrop.append(btn, divDropMenu);
+	let username = "<p class='greyText nomar d-inline'>" + user.username + "</p>";
+	$('<li></li>').appendTo('#userList').append(divDrop, username);
+}
+
+function loadProjects() {
+	$.ajax({
+		type: 'GET',
+        url: '/projects',
+        success : function(response) {
+			if (response.projects)
+				for (let i = 0; i < response.projects.length; i++)
+					addProject(response.projects[i]);
+		}
+	});
+}
+
+loadProjects();
+const reg = /projects\/\d*/;
+if (reg.search(window.location) !== -1)
+	loadUsers();
+
+function loadUsers() {
+	$.ajax({
+		type: 'GET',
+        url: 'users',
+        success : function(response) {
+			if ((response.error === null) && (response.users))
+				for (let i = 0; i < response.users.length; i++)
+					addProject(response.uers[i]);
+		}
+	});
 }
 
 function deleteProj(event)
@@ -44,11 +101,11 @@ function deleteProj(event)
 	});
 }
 
-var list = $('#userList').children();
+/* var list = $('#userList').children();
 for (var i = 0; i < list.length; i++)
 {
 	list.eq(i).children().eq(0).children().eq(1).children().eq(0).click(deleteUser);
-}
+} */
 
 function deleteUser(event)
 {
@@ -57,7 +114,7 @@ function deleteUser(event)
 	$.ajax({
         type: 'DELETE',
         url: 'users/' + $(this).parent().parent().parent().children().eq(1).text(),
-        success : function(response){
+        success : function(response) {
 			if (response.user)
 				$('#userList').children().eq(number).remove();
 			if (response.reload)
@@ -85,19 +142,7 @@ function submitUserForm()
 				$('#addUserForm').hide();
 				$('#addUser').slideToggle();
 				$('#username').val('');
-				var delLink = $('<a></a>').text('Delete');
-				delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-				delLink.click(deleteUser);
-				var divDropMenu = $('<div></div>');
-				divDropMenu.attr('class', 'dropdown-menu greyBg');
-				divDropMenu.append(delLink);
-				var btn = $('<button></button>');
-				btn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
-				var divDrop = $('<div></div>');
-				divDrop.attr('class', 'dropdown d-inline');
-				divDrop.append(btn, divDropMenu);
-				var username = "<p class='greyText nomar d-inline'>" + formData.username + "</p>";
-				$('<li></li>').appendTo('#userList').append(divDrop, username);
+				addUser(response);
 			}
 		}
 	});
@@ -110,23 +155,11 @@ function submitProjForm()
         type: 'POST',
         url: '/projects',
         data: formData,
-        success : function(response){
+        success : function(response) {
 				$('#addProjForm').hide();
 				$('#addProj').slideToggle();
 				$('#projName').val('');
-				var delLink = $('<a></a>').text('Delete');
-				delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-				delLink.click(deleteProj);
-				var divDropMenu = $('<div></div>');
-				divDropMenu.attr('class', 'dropdown-menu greyBg');
-				divDropMenu.append(delLink);
-				var btn = $('<button></button>');
-				btn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
-				var divDrop = $('<div></div>');
-				divDrop.attr('class', 'dropdown d-inline ');
-				divDrop.append(btn, divDropMenu);
-				var projNameLink = "<a class='mylink pad-left d-inline' data-projId=" + response.projId + " href='/projects/" + response.projId + "/'>" + formData.projName + "</a>";
-				$('<li></li>').appendTo('#projectList').append(divDrop, projNameLink);
+				addProject(response);
 			}
 	});
 }

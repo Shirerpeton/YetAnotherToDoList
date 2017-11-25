@@ -12,7 +12,7 @@ block content
 								div(class='dropdown-menu greyBg')
 									a(class='dropdown-item greyBg', href='#') Delete
 							if (i === 0)
-								p(class='text-white nomar d-inline')=projUsers[0]
+								p(class='text-white nomar d-inline')= projUsers[0]
 							else
 								p(class='nomar greyText d-inline')= projUsers[i]
 				button(type='button', id='addUser', class='btn btn-dark btn-block') Add user to this project
@@ -24,15 +24,13 @@ block content
 						div(class='invalid-feedback', id='invUsername') Invalid username!
 	div(class='smallpad' id='projectpanel')
 		div(class='jumbotron border-grey mediumpad w-100 h-100')
-			if (projs)
-				ul(class='blanklist', id='projectList')
-					each proj in projs
-						li
-							div(class='dropdown d-inline')
-								button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-								div(class='dropdown-menu greyBg')
-									a(class='dropdown-item greyBg', href='#') Delete
-							a(class='mylink d-inline pad-left', data-projId=proj.id, href='/projects/' + proj.id + '/')= proj.name
+			ul(class='blanklist', id='projectList')
+				//li
+					div(class='dropdown d-inline')
+						button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+						div(class='dropdown-menu greyBg')
+							a(class='dropdown-item greyBg', href='#') Delete
+					a(class='mylink d-inline pad-left', data-projId=proj.id, href='/projects/' + proj.projectId + '/')= proj.projectName
 			button(type='button', id='addProj', class='btn btn-dark btn-block') Add project
 			form(id='addProjForm', class='hidden', method='post')
 				div(class='form-group row')
