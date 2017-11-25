@@ -54,7 +54,7 @@ function addUser(user) {
 	let divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline');
 	divDrop.append(btn, divDropMenu);
-	let username = "<p class='greyText nomar d-inline'>" + user.username + "</p>";
+	let username = "<p class='greyText nomar d-inline'>" + user + "</p>";
 	$('<li></li>').appendTo('#userList').append(divDrop, username);
 }
 
@@ -72,7 +72,7 @@ function loadProjects() {
 
 loadProjects();
 const reg = /projects\/\d*/;
-if (reg.search(window.location) !== -1)
+if (reg.test(window.location) !== -1)
 	loadUsers();
 
 function loadUsers() {
@@ -82,7 +82,7 @@ function loadUsers() {
         success : function(response) {
 			if ((response.error === null) && (response.users))
 				for (let i = 0; i < response.users.length; i++)
-					addProject(response.uers[i]);
+					addUser(response.users[i]);
 		}
 	});
 }

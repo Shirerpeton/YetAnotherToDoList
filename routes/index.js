@@ -73,7 +73,7 @@ router.get('/updel', (req, res, next) => {
 		});
 });
 
-router.get('/projects/:projId', async (req, res, next) => {
+/* router.get('/projects/:projId', async (req, res, next) => {
 	try {
 		const login = req.session.user;
 		if (login === undefined)
@@ -99,9 +99,21 @@ router.get('/projects/:projId', async (req, res, next) => {
 					if (users[j]['username'] !== login)
 						projUsers.push(users[j]['username']);
 				}
-				res.render('index', { title: 'Yet Another ToDo List', profile: login, projs: projects, projUsers: projUsers });
+				res.render('index', { title: 'Yet Another ToDo List', profile: login });//, projs: projects, projUsers: projUsers });
 			}
 		}
+	} catch (err) {
+		console.log(err);
+	}
+}); */
+
+router.get('/projects/:projId', async (req, res, next) => {
+		try {
+		const login = req.session.user;
+		if (login !== undefined)
+			res.render('index', {title: 'Yet Another ToDo List', profile: login});
+		else
+			res.redirect('/');
 	} catch (err) {
 		console.log(err);
 	}
