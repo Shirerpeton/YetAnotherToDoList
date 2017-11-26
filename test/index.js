@@ -62,7 +62,7 @@ describe('index page', () => {
 			});
 		});
 		describe('get to "/projects"', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				chai.request(server)
 				.get('/projects').redirects(0)
 				.end((err, res) => {
@@ -83,7 +83,7 @@ describe('index page', () => {
 			});
 		});
 		describe('get to "/projects/0/users"', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				chai.request(server)
 				.get('/projects/0/users').redirects(0)
 				.end((err, res) => {
@@ -94,7 +94,7 @@ describe('index page', () => {
 			});
 		});
 		describe('post to "/projects"', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				chai.request(server)
 				.post('/projects')
 				.send({projName: 'testProject'})
@@ -105,7 +105,7 @@ describe('index page', () => {
 			});
 		});
 		describe('post to "/projects/0/users"', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				chai.request(server)
 				.post('/projects/0/users')
 				.send({username: 'testUsername'})
@@ -116,7 +116,7 @@ describe('index page', () => {
 			});
 		});
 		describe('delete to "/projects/0"', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				chai.request(server)
 				.delete('/projects/0')
 				.then(res => {
@@ -125,8 +125,8 @@ describe('index page', () => {
 				}).then(done).catch(console.log);
 			});
 		});
-		describe('post to "/projects/0/users/testUsername"', () => {
-			it('send json with proper error', done => {
+		describe('delete to "/projects/0/users/testUsername"', () => {
+			it('sends json with proper error', done => {
 				chai.request(server)
 				.delete('/projects/0/users/testUsername')
 				.then(res => {
@@ -196,7 +196,7 @@ describe('index page', () => {
 			});
 		});
 		describe('get to "/projects/0/users without access to the project"', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				sandbox.stub(db, 'getUsersOfProject').withArgs(0).returns(testUsers1);
 				agent
 				.get('/projects/0/users')
@@ -208,7 +208,7 @@ describe('index page', () => {
 			});
 		});
 		describe('get to "/projects/0/users with access to the project"', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				sandbox.stub(db, 'getUsersOfProject').withArgs(0).returns(testUsers);
 				agent
 				.get('/projects/0/users')
@@ -221,7 +221,7 @@ describe('index page', () => {
 			});
 		});
 		describe('post to "/projects', () => {
-			it('create new project', done => {
+			it('creates new project and sends json without errors', done => {
 				request.query.onFirstCall().returns({recordset: [{id: 0}]});
 				agent
 				.post('/projects')
@@ -230,8 +230,8 @@ describe('index page', () => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
 					expect(request.query.callCount).to.be.equal(2);
-					expect(transaction.begin.callCount).to.be.equal(1);
-					expect(transaction.commit.callCount).to.be.equal(1);
+					expect(transaction.begin.calledOnce).to.be.true;
+					expect(transaction.commit.calledOnce).to.be.true;
 					expect(transaction.rollback.called).to.be.false;
 					expect(res.body.projectId).to.be.equal(0);
 					expect(pool.connect.calledOnce).to.be.true;
@@ -242,7 +242,7 @@ describe('index page', () => {
 			});
 		});
 		describe('post to "/projects with error in database', () => {
-			it('rollback transaction and send json with proper error', done => {
+			it('rollback transaction and sends json with proper error', done => {
 				request.query.onFirstCall().throws('Database error!');
 				agent
 				.post('/projects')
@@ -250,18 +250,18 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.equal('Iternal error!');
-					expect(request.query.callCount).to.be.equal(1);
-					expect(transaction.begin.callCount).to.be.equal(1);
-					expect(transaction.rollback.callCount).to.be.equal(1);
+					expect(request.query.calledOnce).to.be.true;
+					expect(transaction.begin.calledOnce).to.be.true;
+					expect(transaction.rollback.calledOnce).to.be.true;
 					expect(transaction.commit.called).to.be.false;
 					expect(pool.connect.calledOnce).to.be.true;
 					expect(pool.close.calledOnce).to.be.true;
 					done();
-				})
+				});
 			});
 		});
 		describe('post to "/projects/badId/users" (with bad project ID)', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				agent
 				.post('/projects/badId/users')
 				.send({username: 'testUsername'})
@@ -276,7 +276,7 @@ describe('index page', () => {
 			});
 		});
 		describe('post to "/projects/0/users" wihtout access to the project', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				request.query.onFirstCall().returns({recordset: []});
 				agent
 				.post('/projects/0/users')
@@ -284,7 +284,7 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.equal("You are not in this project!");
-					expect(request.query.callCount).to.be.equal(1);
+					expect(request.query.calledOnce).to.be.true;
 					expect(pool.connect.calledOnce).to.be.true;
 					expect(pool.close.calledOnce).to.be.true;
 					done();
@@ -292,7 +292,7 @@ describe('index page', () => {
 			});
 		});
 		describe('post to "/projects/0/users" with username of user that does not exist', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
 				request.query.onSecondCall().returns({recordset: []});
 				agent
@@ -309,7 +309,7 @@ describe('index page', () => {
 			});
 		});
 		describe('post to "/projects/0/users" with username of user that already in the project', () => {
-			it('send json with proper error', done => {
+			it('sends json with proper error', done => {
 				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
 				request.query.onSecondCall().returns({recordset: [{username: 'testUsername'}]});
 				request.query.onThirdCall().returns({recordset: [{username: 'testUsername'}]});
@@ -327,7 +327,7 @@ describe('index page', () => {
 			});
 		});
 		describe('post to "/projects/0/users"  with proper data', () => {
-			it('add new user to the project and srnd json without errors and with username', done => {
+			it('adds new user to the project and sends json without errors and with username', done => {
 				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
 				request.query.onSecondCall().returns({recordset: [{username: 'testUsername'}]});
 				request.query.onThirdCall().returns({recordset: []});
@@ -345,5 +345,248 @@ describe('index page', () => {
 				});
 			});
 		});
-	})
+		describe('delete to "/projects/badId" (with bad project ID)', () => {
+			it('sends json with proper error', done => {
+				agent
+				.delete('/projects/badId')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal("Invalid project ID!");
+					expect(pool.connect.called).to.be.false;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0" wihtout access to the project', () => {
+			it('sends json with proper error', done => {
+				request.query.onFirstCall().returns({recordset: []});
+				agent
+				.delete('/projects/0')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal("You are not in this project!");
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					expect(request.query.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0" with error in first query', () => {
+			it('sends json with proper error', done => {
+				request.query.onFirstCall().throws('Database error');
+				agent
+				.delete('/projects/0')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal("Iternal error!");
+					expect(request.query.calledOnce).to.be.true;
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0" with error in second query', () => {
+			it('sends json with proper error', done => {
+				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onSecondCall().throws('Database error!');
+				agent
+				.delete('/projects/0')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal("Iternal error!");
+					expect(request.query.callCount).to.be.equal(2);
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					expect(transaction.begin.calledOnce).to.be.true;
+					expect(transaction.rollback.calledOnce).to.be.true;
+					expect(transaction.commit.called).to.be.false;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0" with proper data', () => {
+			it('deletes project and sends json without errors', done => {
+				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
+				agent
+				.delete('/projects/0')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.null;
+					expect(request.query.callCount).to.be.equal(3);
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					expect(transaction.begin.calledOnce).to.be.true;
+					expect(transaction.rollback.called).to.be.false;
+					expect(transaction.commit.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/badId/users/testUsername"', () => {
+			it('sens json with proper error', done => {
+				agent
+				.delete('/projects/badId/users/testUsername')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('Invalid project ID!');
+					expect(request.query.called).to.be.false;
+					expect(pool.connect.called).to.be.false;
+					expect(pool.close.called).to.be.false;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/users/testUsername" without access to the project', () => {
+			it('sens json with proper error', done => {
+				request.query.onFirstCall().returns({recordset: []});
+				agent
+				.delete('/projects/0/users/testUsername')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('You are not in this project!');
+					expect(request.query.calledOnce).to.be.true;
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/users/testUsername" when user whith name username not in the project', () => {
+			it('sens json with proper error', done => {
+				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onSecondCall().returns({recordset: []});
+				agent
+				.delete('/projects/0/users/testUsername')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('That user not in this project!');
+					expect(request.query.callCount).to.be.equal(2);
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/users/testUsername" with error in first query', () => {
+			it('sens json with proper error', done => {
+				request.query.onFirstCall().throws('Database error!');
+				agent
+				.delete('/projects/0/users/testUsername')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('Iternal error!');
+					expect(request.query.calledOnce).to.be.true;
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/users/testUsername" with error in third query', () => {
+			it('rollback transaction and sends json with proper error', done => {
+				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onSecondCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onThirdCall().throws('Database error!');
+				agent
+				.delete('/projects/0/users/testUsername')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal("Iternal error!");
+					expect(request.query.callCount).to.be.equal(3);
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					expect(transaction.begin.calledOnce).to.be.true;
+					expect(transaction.rollback.calledOnce).to.be.true;
+					expect(transaction.commit.called).to.be.false;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/users/testUsername1" with username of other user and when there are other users in the project', () => {
+			it('deletes user and sends json without errors', done => {
+				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onSecondCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onCall(3).returns({recordset: [{username: 'testUsername'}]});
+				agent
+				.delete('/projects/0/users/testUsername1')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.null;
+					expect(res.body.reload).to.be.false;
+					expect(request.query.callCount).to.be.equal(4);
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					expect(transaction.begin.calledOnce).to.be.true;
+					expect(transaction.rollback.called).to.be.false;
+					expect(transaction.commit.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/users/testUsername1" with username of yourself and when there are other users in the project', () => {
+			it('deletes user and sends json without errors', done => {
+				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onSecondCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onCall(3).returns({recordset: [{username: 'testUsername'}]});
+				agent
+				.delete('/projects/0/users/testUsername')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.null;
+					expect(res.body.reload).to.be.true;
+					expect(request.query.callCount).to.be.equal(4);
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					expect(transaction.begin.calledOnce).to.be.true;
+					expect(transaction.rollback.called).to.be.false;
+					expect(transaction.commit.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/users/testUsername1" with username of other user and when there are no other users in the project', () => {
+			it('deletes user and sends json without errors', done => {
+				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onSecondCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onCall(3).returns({recordset: []});
+				agent
+				.delete('/projects/0/users/testUsername1')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.null;
+					expect(res.body.reload).to.be.false;
+					expect(request.query.callCount).to.be.equal(5);
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					expect(transaction.begin.calledOnce).to.be.true;
+					expect(transaction.rollback.called).to.be.false;
+					expect(transaction.commit.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/users/testUsername1" with username of yourself and when there are no other users in the project', () => {
+			it('deletes user and sends json without errors', done => {
+				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onSecondCall().returns({recordset: [{username: 'testUsername'}]});
+				request.query.onCall(3).returns({recordset: []});
+				agent
+				.delete('/projects/0/users/testUsername')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.null;
+					expect(res.body.reload).to.be.true;
+					expect(request.query.callCount).to.be.equal(5);
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
+					expect(transaction.begin.calledOnce).to.be.true;
+					expect(transaction.rollback.called).to.be.false;
+					expect(transaction.commit.calledOnce).to.be.true;
+					done();
+				});
+			});
+		});
+	});
 });

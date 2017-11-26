@@ -71,7 +71,7 @@ function loadProjects() {
 }
 
 loadProjects();
-if (/projects\/\d*/.test(window.location) !== -1)
+if (/projects\/\d*/.test(window.location) === true)
 	loadUsers();
 
 function loadUsers() {
