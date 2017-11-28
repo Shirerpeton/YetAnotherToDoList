@@ -17,12 +17,12 @@ function submitForm()
 				$('#username').attr('class', 'form-control is-invalid');
 				$('#password').attr('class', 'form-control');
 			}
-			else 
+			else
 			{
 				$('#username').attr('class', 'form-control is-valid');
 				if (response.error === 'Invalid password!')
 					$('#password').attr('class', 'form-control is-invalid');
-				else
+				else if (response.error === null)
 				{
 					$('#password').attr('class', 'form-control is-valid');
 					window.location.replace('/');

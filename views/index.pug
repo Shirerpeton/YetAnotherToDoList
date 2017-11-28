@@ -9,11 +9,11 @@ block content
 						button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
 						div(class='dropdown-menu greyBg')
 							a(class='dropdown-item greyBg', href='#') Delete
-					p(class='nomar greyText d-inline')= projUsers[i]
-			button(type='button', id='addUser', class='btn btn-dark btn-block') Add user to this project
+					p(class='greyText d-inline')= projUsers[i]
+			button(type='button', id='addUser', class='btn btn-dark btn-block hidden') Add user to this project
 			form(id='addUserForm', class='hidden', method='post')
 				div(class='form-group row')
-					input(id='username', type='text', class='col-10 form-control', name='username', placeholder='Username', required,  oninvalid="this.setCustomValidity('Please Enter Username')"
+					input(id='username', type='text', class='col-10 form-control', name='username', placeholder='Username',  oninvalid="this.setCustomValidity('Please Enter Username')"
  oninput="setCustomValidity('')")
 					button(type='submit', class='col-2 btn btn-dark btn-block', id='submitUser') +
 					div(class='invalid-feedback', id='invUsername') Invalid username!
@@ -24,14 +24,35 @@ block content
 					div(class='dropdown d-inline')
 						button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
 						div(class='dropdown-menu greyBg')
+							a(class='dropdown-item greyBg', href='#') Rename
 							a(class='dropdown-item greyBg', href='#') Delete
 					a(class='mylink d-inline pad-left', data-projId=proj.id, href='/projects/' + proj.projectId + '/')= proj.projectName
 			button(type='button', id='addProj', class='btn btn-dark btn-block') Add project
 			form(id='addProjForm', class='hidden', method='post')
 				div(class='form-group row')
-					input(id='projName', type='text', class='col-10 form-control', name='projName', placeholder='Project name', required,  oninvalid="this.setCustomValidity('Please Enter Project Name')"
+					input(id='projName', type='text', class='col-10 form-control', name='projName', placeholder='Project name',  oninvalid="this.setCustomValidity('Please Enter Project Name')"
  oninput="setCustomValidity('')")
 					button(type='submit', class='col-2 btn btn-dark btn-block', id='submitProj') +
+			form(id='renameProjForm', class='hidden', method='post')
+				div(class='form-group row')
+					input(id ='newProjName', type='text', class='col-10 form-control', name='projName', placeholder='New project name',  oninvalid="this.setCustomValidity('Please Enter New Project Name')"
+ oninput="setCustomValidity('')")
+					button(type='submit', class='col-2 btn btn-dark btn-block', id='submitNewProjName') +
+					div(class='invalid-feedback', id='invNewProjName')
 	div(class='smallpad', id='workspace')
 		div(class='jumbotron border-grey mediumpad w-100 h-100')
+			ul(class='blanklist', id='taskList')
+				//li
+					div(class='dropdown d-inline')
+						button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+						div(class='dropdown-menu greyBg')
+							a(class='dropdown-item greyBg', href='#') Rename
+							a(class='dropdown-item greyBg', href='#') Delete
+					p(class='nomar greyText d-inline')= tasks[i]
+			button(type='button', id='addTask', class='btn btn-dark btn-block hidden') Add task
+			form(id='addTaskForm', class='hidden', method='post')
+				div(class='form-group row')
+					input(id='taskName', type='text', class='col-11 form-control', name='taskName', placeholder='Task name',  oninvalid="this.setCustomValidity('Please Enter Task Name')"
+ oninput="setCustomValidity('')")
+					button(type='submit', class='col-1 btn btn-dark btn-block', id='submitTask') +
 	script(src='/javascripts/index.js')

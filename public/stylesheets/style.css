@@ -31,6 +31,9 @@ body, html {
 	color: rgba(255, 255, 255, 0.9);
 }
 
+.smallmar{
+	margin: 1rem !important;
+}
 
 .blanklist{
 	list-style-type: none;
