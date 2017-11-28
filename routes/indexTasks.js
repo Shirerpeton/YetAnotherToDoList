@@ -26,7 +26,8 @@ router.get('/projects/:projId/tasks', async (req, res) => {
 					try {
 						await pool.connect();
 						const result = await pool.request()
-						.query('select * from tasks');
+						.input('projId', sql.Int, projId)
+						.query('select * from tasks where (projectId = @projId)');
 						res.json({error: null, tasks: result.recordset});
 						pool.close();
 					} catch (err) {
