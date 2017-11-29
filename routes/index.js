@@ -8,14 +8,13 @@ const db = require('../bin/db.js');
 router.get('/', async (req, res) => {
 	try {
 		const login = req.session.user;
-		throw "AAAA IT'S A GODDAMN ERROR!";
 		if (login !== undefined)
 			res.render('index', {title: 'Yet Another ToDo List', profile: login});
 		else
 			res.render('welcome', {title: 'Welcome to the Yet Another ToDo List'});
 	} catch (err) {
 		console.log(err);
-		res.status(500).render('error', { profile: req.session.user, message: 'Iternal error!'});
+		res.status(500).render('error', { profile: req.session.user, title: 'error', message: 'Iternal error!'});
 	}
 });
 
