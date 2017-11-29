@@ -3,13 +3,12 @@ const bodyParser = require('body-parser');
 const router = express.Router();
 const sql = require('mssql');
 const bcrypt = require('../bin/bcryptPromise.js');
+const Ajv = require('ajv');
+const ajv = new Ajv();
+const schemas = require('../bin/jsonSchemas.js');
 const db = require('../bin/db.js');
 
-
-const chai = require('chai')
-	, expect = chai.expect
-const chaiHttp = require('chai-http');
-const app = require('../app.js');
+const signinValidation = ajv.compile(schemas.signin);
 
 router.get('/', function(req, res, next) {
 	if(req.session.user !== undefined)
@@ -22,25 +21,30 @@ router.get('/', function(req, res, next) {
 
 router.post('/', async (req, res, next) => {
 	try {
-		const login = req.body.username;
-		const password = req.body.password;
-		const result = await db.getUserByUsername(login);
-		if (!result)
-			res.json({ error: 'That user do not exist!' });
+		if (!signinValidation(req.body))
+			res.json({"error": "Invalid request!", "errorDetails": signinValidation.errors});
 		else
 		{
-			const resultOfComp = await bcrypt.promiseCompare(password, result.passwordHash);
-			if (resultOfComp)
-			{
-				req.session.user = login;
-				res.json({ error: null });
-			} 
+			const login = req.body.username;
+			const password = req.body.password;
+			const result = await db.getUserByUsername(login);
+			if (!result)
+				res.json({ error: 'That user do not exist!' });
 			else
-				res.json({ error: 'Invalid password!' });
+			{
+				const resultOfComp = await bcrypt.promiseCompare(password, result.passwordHash);
+				if (resultOfComp)
+				{
+					req.session.user = login;
+					res.json({ error: null });
+				} 
+				else
+					res.json({ error: 'Invalid password!' });
+			}
 		}
 	} catch (err) {
 		console.log(err);
 	}
 });
-
+	
 module.exports = router;

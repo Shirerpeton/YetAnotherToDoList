@@ -113,6 +113,9 @@ router.delete('/projects/:projId', async (req, res) => {
 							await transaction.begin();
 							await transaction.request()
 							.input('projId', sql.Int, projId)
+							.query('delete from tasks where projectId = @projId');
+							await transaction.request()
+							.input('projId', sql.Int, projId)
 							.query('delete from usersProjects where projectId = @projId');
 							await transaction.request()
 							.input('projId', sql.Int, projId)

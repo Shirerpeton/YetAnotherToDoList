@@ -204,7 +204,7 @@ describe('index page', () => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
 					expect(res.body.reload).to.be.false;
-					expect(request.query.callCount).to.be.equal(3);
+					expect(request.query.callCount).to.be.equal(4);
 					expect(db.isUserInTheProject.callCount).to.be.equal(2);
 					expect(pool.connect.calledOnce).to.be.true;
 					expect(pool.close.calledOnce).to.be.true;
@@ -225,7 +225,7 @@ describe('index page', () => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
 					expect(res.body.reload).to.be.true;
-					expect(request.query.callCount).to.be.equal(3);
+					expect(request.query.callCount).to.be.equal(4);
 					expect(db.isUserInTheProject.callCount).to.be.equal(2);
 					expect(pool.connect.calledOnce).to.be.true;
 					expect(pool.close.calledOnce).to.be.true;

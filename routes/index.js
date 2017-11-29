@@ -12,12 +12,13 @@ router.get('/', async (req, res) => {
 			res.render('index', {title: 'Yet Another ToDo List', profile: login});
 		else
 			res.render('welcome', {title: 'Welcome to the Yet Another ToDo List'});
+		throw "AAAA IT'S A GODDAMN ERROR!"
 	} catch (err) {
 		console.log(err);
-		res.render('error', { profile: req.session.user, message: 'Iternal error!'});
+		res.status(500).render('error', { profile: req.session.user, message: 'Iternal error!'});
 	}
 });
-/* 
+
 router.get('/pinfo', (req, res) => {
 	const pool = new sql.ConnectionPool(db.config);
 		pool.connect(err => {
@@ -96,7 +97,7 @@ router.get('/tdel', async (req, res) => {
 	} catch (err) {
 		console.log(err);
 	}
-}); */
+});
 
 /* router.get('/alter', async (req, res) => {
 	try {
@@ -114,9 +115,9 @@ router.get('/tdel', async (req, res) => {
 	} catch (err) {
 		console.log(err);
 	}
-});
- */
-/* router.get('/tableinfo/:table/', async (req, res) => {
+}); */
+
+router.get('/tableinfo/:table/', async (req, res) => {
 	try {
 		const pool = new sql.ConnectionPool(db.config);
 		try {
@@ -134,9 +135,9 @@ router.get('/tdel', async (req, res) => {
 	} catch (err) {
 		console.log(err);
 	}
-}); */
+});
 
-/* router.get('/addTaskTable', async (req, res) => {
+router.get('/addTaskTable', async (req, res) => {
 	try {
 		const pool = new sql.ConnectionPool(db.config);
 			try {
@@ -152,6 +153,6 @@ router.get('/tdel', async (req, res) => {
 	} catch (err) {
 		console.log(err);
 	}
-}); */
+});
 
 module.exports = router;

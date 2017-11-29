@@ -329,7 +329,7 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
-					expect(request.query.callCount).to.be.equal(3);
+					expect(request.query.callCount).to.be.equal(4);
 					expect(pool.connect.calledOnce).to.be.true;
 					expect(pool.close.calledOnce).to.be.true;
 					expect(transaction.begin.calledOnce).to.be.true;
