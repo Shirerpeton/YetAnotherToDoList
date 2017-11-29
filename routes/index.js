@@ -8,11 +8,11 @@ const db = require('../bin/db.js');
 router.get('/', async (req, res) => {
 	try {
 		const login = req.session.user;
+		throw "AAAA IT'S A GODDAMN ERROR!"
 		if (login !== undefined)
 			res.render('index', {title: 'Yet Another ToDo List', profile: login});
 		else
 			res.render('welcome', {title: 'Welcome to the Yet Another ToDo List'});
-		throw "AAAA IT'S A GODDAMN ERROR!"
 	} catch (err) {
 		console.log(err);
 		res.status(500).render('error', { profile: req.session.user, message: 'Iternal error!'});
@@ -137,7 +137,7 @@ router.get('/tableinfo/:table/', async (req, res) => {
 	}
 });
 
-router.get('/addTaskTable', async (req, res) => {
+/* router.get('/addTaskTable', async (req, res) => {
 	try {
 		const pool = new sql.ConnectionPool(db.config);
 			try {
@@ -153,6 +153,6 @@ router.get('/addTaskTable', async (req, res) => {
 	} catch (err) {
 		console.log(err);
 	}
-});
+}); */
 
 module.exports = router;
