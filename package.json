@@ -1,9 +1,6 @@
 {
   "name": "yetanothertodolist",
   "version": "1.0.0",
-  "engines": {
-    "node": ">=8.8.1"
-  },
   "private": true,
   "scripts": {
     "start": "node ./bin/www",

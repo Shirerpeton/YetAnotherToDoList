@@ -15,8 +15,7 @@ router.get('/', async (req, res) => {
 			res.render('welcome', {title: 'Welcome to the Yet Another ToDo List'});
 	} catch (err) {
 		console.log(err);
-		res.status(500);
-		res.render('error', { profile: req.session.user, message: 'Iternal error!'});
+		res.status(500).render('error', { profile: req.session.user, message: 'Iternal error!'});
 	}
 });
 
