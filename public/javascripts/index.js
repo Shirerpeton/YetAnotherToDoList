@@ -49,59 +49,64 @@ $("#addTaskForm").submit(function(event){
 });
 
 function addProject(project) {
-	let delLink = $('<a></a>').text('Delete');
-	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
+	const delLink = $('<a></a>').text('Delete');
+	delLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
 	delLink.click(deleteProj);
-	let renameLink = $('<a></a>').text('Rename');
-	renameLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
+	const renameLink = $('<a></a>').text('Rename');
+	renameLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
 	renameLink.click(renameProj(project.projectId));
-	let divDropMenu = $('<div></div>');
+	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(renameLink);
 	divDropMenu.append(delLink);
-	let btn = $('<button></button>');
-	btn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
-	let divDrop = $('<div></div>');
+	const dropBtn = $('<button></button>');
+	dropBtn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	const divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline ');
-	divDrop.append(btn, divDropMenu);
-	let projNameLink = "<a class='mylink pad-left d-inline' data-projId=" + project.projectId + " href='/projects/" + project.projectId + "/'>" + project.projectName + "</a>";
+	divDrop.append(dropBtn, divDropMenu);
+	const projNameLink = $('<a></a>').text(project.projectName);
+	projNameLink.attr({'class': 'mylink pad-left d-inline', 'data-projId': project.projectId, 'href': '/projects/' + project.projectId + '/'});
+	//let projNameLink = "<a class='mylink pad-left d-inline' data-projId=" + project.projectId + " href='/projects/" + project.projectId + "/'>" + project.projectName + "</a>";
 	$('<li></li>').appendTo('#projectList').append(divDrop, projNameLink);
 }
 
 function addUser(user) {
-	let delLink = $('<a></a>').text('Delete');
+	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
 	delLink.click(deleteUser);
-	let divDropMenu = $('<div></div>');
+	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(delLink);
-	let btn = $('<button></button>');
-	btn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
-	let divDrop = $('<div></div>');
+	const dropBtn = $('<button></button>');
+	dropBtn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	const divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline');
-	divDrop.append(btn, divDropMenu);
-	let username = "<p class='greyText smallmar d-inline'>" + user.username + "</p>";
+	divDrop.append(dropBtn, divDropMenu);
+	const username = $('<p></p>').text(user.username);
+	username.attr('class', 'greyText smallmar d-inline');
 	$('<li></li>').appendTo('#userList').append(divDrop, username);
 }
 
 function addTask(task) {
-	let delLink = $('<a></a>').text('Delete');
+	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
 	delLink.click(deleteTask);
-	let renameLink = $('<a></a>').text('Rename');
+	const renameLink = $('<a></a>').text('Rename');
 	renameLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
 	renameLink.click(renameTask(task.taskId));
-	let divDropMenu = $('<div></div>');
+	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(renameLink);
 	divDropMenu.append(delLink);
-	let btn = $('<button></button>');
-	btn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
-	let divDrop = $('<div></div>');
+	const dropBtn = $('<button></button>');
+	dropBtn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	const divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline ');
-	divDrop.append(btn, divDropMenu);
-	let taskNameLink = "<p class='greyText smallmar d-inline' data-taskId=" + task.taskId + "'>" + task.taskName + "</p>";
-	$('<li></li>').appendTo('#taskList').append(divDrop, taskNameLink);
+	divDrop.append(dropBtn, divDropMenu);
+	const taskName = $('<p></p>').text(task.taskName);
+	taskName.attr({'class': 'greyText smallmar d-inline', 'data-taskId': task.taskId});
+	//const taskNameLink = "<p class='greyText smallmar d-inline' data-taskId=" + task.taskId + "'>" + task.taskName + "</p>";
+	$('<li></li>').appendTo('#taskList').append(divDrop, taskName);
 }
 
 function loadProjects() {
@@ -255,26 +260,23 @@ function submitUserForm()
 		$('#addUser').slideToggle();
 	}
 	else
+	{
+		$('#username').attr('class', 'col-10 form-control');
+		$('#addUserForm').hide();
+		$('#addUser').slideToggle();
+		$('#username').val('');
 		$.ajax({
 			type: 'POST',
 			url: 'users/',
 			data: formData,
 			success : function(response) {
-				if (response.error !== null)
-				{
-					$('#username').attr('class', 'col-10 form-control is-invalid');
-					$('#invUsername').text(response.error);
-				}
-				else
-				{
-					$('#username').attr('class', 'col-10 form-control');
-					$('#addUserForm').hide();
-					$('#addUser').slideToggle();
-					$('#username').val('');
+				if (response.error === null)
 					addUser(response);
-				}
+				else
+					console.log(response.error);
 			}
 		});
+	}
 }
 
 function submitProjForm()
@@ -286,21 +288,23 @@ function submitProjForm()
 		$('#addProj').slideToggle();
 	}
 	else
+	{
+		$('#projName').attr('class', 'col-10 form-control');
+		$('#addProjForm').hide();
+		$('#addProj').slideToggle();
+		$('#projName').val('');
 		$.ajax({
 			type: 'POST',
 			url: '/projects',
 			data: formData,
 			success : function(response) {
 				if (response.error === null)
-				{
-					$('#projName').attr('class', 'col-10 form-control');
-					$('#addProjForm').hide();
-					$('#addProj').slideToggle();
-					$('#projName').val('');
 					addProject(response);
-				}
+				else
+					console.log(response.error);
 			}
 		});
+	}
 }
 
 function submitTaskForm()
@@ -312,19 +316,21 @@ function submitTaskForm()
 		$('#addTask').slideToggle();
 	}
 	else
+	{
+		$('#taskName').attr('class', 'col-10 form-control');
+		$('#addTaskForm').hide();
+		$('#addTask').slideToggle();
+		$('#taskName').val('');
 		$.ajax({
 			type: 'POST',
 			url: 'tasks/',
 			data: formData,
 			success : function(response) {
 				if (response.error === null)
-				{
-					$('#taskName').attr('class', 'col-10 form-control');
-					$('#addTaskForm').hide();
-					$('#addTask').slideToggle();
-					$('#taskName').val('');
 					addTask(response);
-				}
+				else
+					console.log(response.error);
 			}
 		});
+	}
 }
