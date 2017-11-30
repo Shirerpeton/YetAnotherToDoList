@@ -5,7 +5,7 @@ const sql = require('mssql');
 const db = require('../bin/db.js');
 
 router.get('/', function(req, res, next) {
-	let login = req.session.user;
+	const login = req.session.user;
 	if (login)
 		res.render('change-password', { title: 'Change passoword', profile: login });
 	else

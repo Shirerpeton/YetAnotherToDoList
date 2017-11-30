@@ -35,10 +35,9 @@ app.use(session({
 	//cookie: { secure: true }
 }));
 
-
-app.use('/change-password', changePassword);
 app.use('/users/sign-in', signIn);
 app.use('/users/sign-up', signUp);
+app.use('/change-password', changePassword);
 app.use('/users', users);
 app.use('/', index);
 

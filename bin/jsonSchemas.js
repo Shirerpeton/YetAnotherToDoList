@@ -96,4 +96,33 @@ schemas.addTask = {
 	"required": ["taskName"]
 };
 
+schemas.updateTask = {
+	"$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Update task",
+    "description": "Update task request schema",
+    "type": "object",
+	"anyOf": [
+        {"required": ["taskName"]},
+        {"required": ["dueDate"]},
+		{"required": ["priority"]},
+		{"required": ["completed"]}
+	],
+	"properties": {
+		"taskName": {
+			"type": "string"
+		},
+		"dueDate": {
+			"type": "string"
+		},
+		"priority": {
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 2
+		},
+		"completed": {
+			"type": "boolean",
+		}
+	}
+};
+
 module.exports = schemas;
