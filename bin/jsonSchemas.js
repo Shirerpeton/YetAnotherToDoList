@@ -64,8 +64,8 @@ schemas.renameProject = {
 
 schemas.addUser = {
 	"$schema": "http://json-schema.org/draft-06/schema#",
-    "title": "Add user project",
-    "description": "Add user request schema",
+    "title": "Add user to project",
+    "description": "Add user to project request schema",
     "type": "object",
 	"properties": {
 		"username": {
@@ -73,6 +73,27 @@ schemas.addUser = {
 		}
 	},
 	"required": ["username"]
+};
+
+schemas.addTask = {
+	"$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Add task",
+    "description": "Add task request schema",
+    "type": "object",
+	"properties": {
+		"taskName": {
+			"type": "string"
+		},
+		"dueDate": {
+			"type": "string"
+		},
+		"priority": {
+			"type": "integer",
+			"minimum": 0,
+			"maximum": 2
+		}
+	},
+	"required": ["taskName"]
 };
 
 module.exports = schemas;

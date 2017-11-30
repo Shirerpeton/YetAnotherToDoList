@@ -1,10 +1,15 @@
 'use strict';
 
-const express = require('express');
-const router = require('./indexUsers.js');
-const sql = require('mssql');
-const db = require('../bin/db.js');
-const moment = require('moment');
+const express = require('express')
+	, router = require('./indexUsers.js')
+	, sql = require('mssql')
+	, db = require('../bin/db.js')
+	, moment = require('moment')
+	, Ajv = require('ajv')
+	, ajv = new Ajv()
+	, schemas = require('../bin/jsonSchemas.js');
+
+const addTaskValidation = ajv.compile(schemas.addTask);	
 
 router.get('/projects/:projId/tasks', async (req, res) => {
 	try {
@@ -41,8 +46,8 @@ router.get('/projects/:projId/tasks', async (req, res) => {
 router.post('/projects/:projId/tasks', async (req, res) => {
 	try {
 		const login = req.session.user;
-		if (login === undefined)
-			res.json({error: 'You are not logged!'});
+		if (!addTaskValidation(req.body))
+			res.json({"error": "Invalid request!", "errorDetails": addTaskValidation.errors});
 		else
 		{
 			const projId = Number(req.params.projId);
