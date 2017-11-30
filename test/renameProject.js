@@ -141,8 +141,8 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
-					expect(res.body.projectName).to.be.equal('newProjectName');
-					expect(res.body.projectId).to.be.equal(0);
+					expect(res.body.project.projectName).to.be.equal('newProjectName');
+					expect(res.body.project.projectId).to.be.equal(0);
 					expect(request.query.callCount).to.be.equal(2);
 					expect(pool.connect.calledOnce).to.be.true;
 					expect(pool.close.calledOnce).to.be.true;

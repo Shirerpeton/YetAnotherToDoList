@@ -1,25 +1,28 @@
 'use strict';
 
+$('#renameProjForm').hide();
+$('#addProjForm').hide();
+$('#addUserForm').hide();
+$('#addTaskForm').hide();
+$('#updateTaskForm').hide();
+
+$('#addUser').hide();
+$('#addTask').hide();
+
 $("#addProj").click(function(){
 	$('#addProj').slideToggle();
-	$('#addProjForm').hide();
-	$('#addProjForm').attr('class', '');
 	$('#addProjForm').slideToggle();
 	$('#projName').focus();
 });
 
 $("#addUser").click(function(){
 	$('#addUser').slideToggle();
-	$('#addUserForm').hide();
-	$('#addUserForm').attr('class', '');
 	$('#addUserForm').slideToggle();
 	$('#username').focus();
 });
 
 $("#addTask").click(function(){
 	$('#addTask').slideToggle();
-	$('#addTaskForm').hide();
-	$('#addTaskForm').attr('class', '');
 	$('#addTaskForm').slideToggle();
 	$('#taskName').focus();
 });
@@ -48,6 +51,24 @@ $("#addTaskForm").submit(event => {
 
 $("#addTaskForm").submit(submitTaskForm);
 
+$("#updateTaskForm").submit(event => {
+	event.preventDefault();
+});
+
+$("#updateTaskForm").submit(submitUpdateTaskForm);
+
+let users = [], projects = [], tasks = [];
+
+let renamingProject = {
+	id: null,
+	number: null
+};
+
+let updatingTask = {
+	id: null,
+	number: null
+}
+
 function addProject(project) {
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
@@ -66,8 +87,7 @@ function addProject(project) {
 	divDrop.append(dropBtn, divDropMenu);
 	const projNameLink = $('<a></a>').text(project.projectName);
 	projNameLink.attr({'class': 'mylink pad-left d-inline', 'data-projId': project.projectId, 'href': '/projects/' + project.projectId + '/'});
-	//let projNameLink = "<a class='mylink pad-left d-inline' data-projId=" + project.projectId + " href='/projects/" + project.projectId + "/'>" + project.projectName + "</a>";
-	$('<li></li>').appendTo('#projectList').append(divDrop, projNameLink);
+	$('#projectList').append($('<li></li>').append(divDrop, projNameLink));
 }
 
 function addUser(user) {
@@ -84,7 +104,7 @@ function addUser(user) {
 	divDrop.append(dropBtn, divDropMenu);
 	const username = $('<p></p>').text(user.username);
 	username.attr('class', 'greyText smallmar d-inline');
-	$('<li></li>').appendTo('#userList').append(divDrop, username);
+	$('#userList').append($('<li></li>').append(divDrop, username));
 }
 
 function addTask(task) {
@@ -93,7 +113,7 @@ function addTask(task) {
 	delLink.click(deleteTask);
 	const renameLink = $('<a></a>').text('Rename');
 	renameLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	renameLink.click(renameTask(task.taskId));
+	renameLink.click(updateTask(task.taskId));
 	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(renameLink);
@@ -105,8 +125,7 @@ function addTask(task) {
 	divDrop.append(dropBtn, divDropMenu);
 	const taskName = $('<p></p>').text(task.taskName);
 	taskName.attr({'class': 'greyText smallmar d-inline', 'data-taskId': task.taskId});
-	//const taskNameLink = "<p class='greyText smallmar d-inline' data-taskId=" + task.taskId + "'>" + task.taskName + "</p>";
-	$('<li></li>').appendTo('#taskList').append(divDrop, taskName);
+	$('#taskList').append($('<li></li>').append(divDrop, taskName));
 }
 
 function loadProjects() {
@@ -114,18 +133,19 @@ function loadProjects() {
 		type: 'GET',
         url: '/projects',
         success : function(response) {
-			if (response.projects)
+			if ((response.error === null) && (response.projects)) {
 				for (let i = 0; i < response.projects.length; i++)
 					addProject(response.projects[i]);
+				projects = response.projects;
+			}
 		}
 	});
 }
 
 loadProjects();
-if (/projects\/\d*/.test(window.location) === true)
-{
-	$('#addUser').attr('class', 'btn btn-dark btn-block');
-	$('#addTask').attr('class', 'btn btn-dark btn-block');
+if (/projects\/\d*/.test(window.location)){
+	$('#addUser').show();
+	$('#addTask').show();
 	loadUsers();
 	loadTasks();
 }
@@ -135,9 +155,11 @@ function loadUsers() {
 		type: 'GET',
         url: 'users',
         success : function(response) {
-			if ((response.error === null) && (response.users))
+			if ((response.error === null) && (response.users)) {
 				for (let i = 0; i < response.users.length; i++)
 					addUser(response.users[i]);
+				users = response.users; 
+			}
 		}
 	});
 }
@@ -147,9 +169,11 @@ function loadTasks() {
 		type: 'GET',
         url: 'tasks',
         success : function(response) {
-			if ((response.error === null) && (response.tasks))
+			if ((response.error === null) && (response.tasks)) {
 				for (let i = 0; i < response.tasks.length; i++)
 					addTask(response.tasks[i]);
+				tasks = response.tasks;
+			}
 		}
 	});
 }
@@ -164,7 +188,7 @@ function deleteProj(event) {
         success : function(response){
 			if (response.error === null)
 				$('#projectList').children().eq(number).remove();
-			let reg = new RegExp('\/projects\/' + projId + '\/');
+			const reg = new RegExp('\/projects\/' + projId + '\/');
 			if (reg.test(window.location))
 				window.location.replace('/');
 		}
@@ -188,10 +212,15 @@ function deleteUser(event) {
 	});
 }
 
-function renameTask(taskId) {
-	let taskNumber = $('#taskList').children().length;
+function updateTask(taskId) {
+	const taskNumber = $('#taskList').children().length;
 	return (event) => {
 		event.preventDefault();
+		updatingTask.id = taskId;
+		updatingTask.number = taskNumber;
+		$('#addTask').slideToggle();
+		$('#updateTaskForm').slideToggle();
+		$('#newTaskName').focus();
 	}
 }
 
@@ -201,14 +230,12 @@ function deleteTask(event)
 }
 
 function renameProj(projId) {
-	let projNumber = $('#projectList').children().length;
+	const projNumber = $('#projectList').children().length;
 	return (event) => {
 		event.preventDefault();
+		renamingProject.id = projId;
+		renamingProject.number = projNumber;
 		$('#addProj').slideToggle();
-		$('#renameProjForm').hide();
-		$('#renameProjForm').attr('class', '');
-		$('#renameProjForm').attr('data-projId', projId);
-		$('#renameProjForm').attr('data-projNumber', projNumber);
 		$('#renameProjForm').slideToggle();
 		$('#newProjName').focus();
 	}
@@ -225,15 +252,16 @@ function submitRenameProjForm() {
 		$('#renameProjForm').off('submit', submitRenameProjForm);
 		$.ajax({
 			type: 'PUT',
-			url: '/projects/' + $('#renameProjForm').attr('data-projId') + '/',
+			url: '/projects/' + renamingProject.id + '/',
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
-					$('#projectList').children().eq($('#renameProjForm').attr('data-projNumber')).children().eq(1).text(response.projectName);
+					$('#projectList').children().eq(renamingProject.number).children().eq(1).text(response.project.projectName);
 					$('#newProjName').attr('class', 'col-10 form-control');
 					$('#renameProjForm').hide();
 					$('#addProj').slideToggle();
 					$('#newProjName').val('');
+					projects[renamingProject.number] = response.project;
 				}
 				else {
 					$('#newProjName').attr('class', 'col-10 form-control is-invalid');
@@ -260,11 +288,12 @@ function submitUserForm() {
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
+					addUser(response.user);
 					$('#username').attr('class', 'col-10 form-control');
 					$('#addUserForm').hide();
 					$('#addUser').slideToggle();
 					$('#username').val('');
-					addUser(response);
+					users.push(response.user);
 				}
 				else {
 					$('#username').attr('class', 'col-10 form-control is-invalid');
@@ -278,13 +307,12 @@ function submitUserForm() {
 
 function submitProjForm() {
 	const formData = { 'projectName': $('#projName').val() };
-	if (formData.projectName === '')
-	{
+	if (formData.projectName === '') {
+		$('#projName').attr('class', 'col-10 form-control');
 		$('#addProjForm').hide();
 		$('#addProj').slideToggle();
 	}
-	else
-	{
+	else {
 		$('#addProjForm').off('submit', submitProjForm);
 		$.ajax({
 			type: 'POST',
@@ -293,11 +321,12 @@ function submitProjForm() {
 			success : function(response) {
 				if (response.error === null)
 				{
+					addProject(response.project);
 					$('#projName').attr('class', 'col-10 form-control');
 					$('#addProjForm').hide();
 					$('#addProj').slideToggle();
 					$('#projName').val('');
-					addProject(response);
+					projects.push(response.project);
 				}
 				else {
 					$('#projName').attr('class', 'col-10 form-control is-invalid');
@@ -310,14 +339,13 @@ function submitProjForm() {
 }
 
 function submitTaskForm() {
-	const formData = { 'taskName': $('#taskName').val(), 'dueDate' : 'aaaa'};
-	if (formData.taskName === '')
-	{
+	const formData = { 'taskName': $('#taskName').val()};
+	if (formData.taskName === '') {
+		$('#taskName').attr('class', 'col-10 form-control');
 		$('#addTaskForm').hide();
 		$('#addTask').slideToggle();
 	}
-	else
-	{
+	else {
 		$('#addTaskForm').off('submit', submitTaskForm);
 		$.ajax({
 			type: 'POST',
@@ -325,17 +353,50 @@ function submitTaskForm() {
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
+					addTask(response.task);
 					$('#taskName').attr('class', 'col-10 form-control');
 					$('#addTaskForm').hide();
 					$('#addTask').slideToggle();
 					$('#taskName').val('');
-					addTask(response);
+					tasks.push(response.task);
 				}
 				else {
 					$('#taskName').attr('class', 'col-10 form-control is-invalid');
 					$('#invTask').text(response.error);
 				}
 				$('#addTaskForm').submit(submitTaskForm);
+			}
+		});
+	}
+}
+
+function submitUpdateTaskForm() {
+	const formData = {'taskName': $('#newTaskName').val()};
+	if (formData.newTaskName === '') {
+		$('#newTaskName').attr('class', 'col-10 form-control');
+		$('#updateTaskForm').hide();
+		$('#addTask').slideToggle();
+	}
+	else {
+		$('#updateTaskForm').off('submit', submitUpdateTaskForm);
+		$.ajax({
+			type: 'PUT',
+			url: 'tasks/' + updatingTask.id + '/',
+			data: formData,
+			success : function(response) {
+				if (response.error === null) {
+					$('#taskList').children().eq(updatingTask.number).children().eq(1).text(response.task.taskName);
+					$('#newTaskName').attr('class', 'col-10 form-control');
+					$('#updateTaskForm').hide();
+					$('#addTask').slideToggle();
+					$('#newTaskName').val('');
+					tasks[updatingTask.number] = response.task;
+				}
+				else {
+					$('#newTaskName').attr('class', 'col-10 form-control is-invalid');
+					$('#invUpdateTask').text(response.error);
+				}
+				$('#updateTaskForm').submit(submitTaskForm);
 			}
 		});
 	}

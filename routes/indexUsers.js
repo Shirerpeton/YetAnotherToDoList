@@ -64,7 +64,7 @@ router.post('/projects/:projId/users', async (req, res) => {
 								.input('username', sql.VarChar(20), username)
 								.input('projId', sql.Int, projId)
 								.query('insert into usersProjects (username, projectId) values (@username, @projId)');
-								res.json({error: null, username: username});
+								res.json({error: null, user: {username: username}});
 								pool.close();
 							} catch (err) {
 								pool.close();

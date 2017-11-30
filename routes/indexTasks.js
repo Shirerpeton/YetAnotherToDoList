@@ -78,7 +78,7 @@ router.post('/projects/:projId/tasks', async (req, res) => {
 							.input('dueDate', sql.VarChar, dueDate)
 							.input('priority', sql.Int, priority)
 							.query('insert into tasks (taskName, projectId, dateOfAdding, dueDate, priority, completed) values (@taskName, @projId, @date, @dueDate, @priority, 0); SELECT SCOPE_IDENTITY() AS id');
-							res.json({error: null, taskName: taskName, dateOfAdding: currentDate, dueDate: dueDate, priority: priority, taskId: result.recordset[0].id, completed: false});
+							res.json({error: null, task: {taskName: taskName, dateOfAdding: currentDate, dueDate: dueDate, priority: priority, taskId: result.recordset[0].id, completed: false}});
 							pool.close();
 						} catch (err) {
 							pool.close();
@@ -142,7 +142,7 @@ router.put('/projects/:projId/tasks/:taskId', async (req, res) => {
 									.input('priority', sql.Int, priority)
 									.input('completed', sql.Bit, completed ? 1 : 0)
 									.query('update tasks set taskName = @taskName, dueDate = @dueDate, priority = @priority, completed = @completed where (taskId = @taskId)');
-									res.json({error: null, taskName: taskName, dateOfAdding: result.dateOfAdding, dueDate: dueDate, priority: priority, completed: completed, taskId: taskId});
+									res.json({error: null, task: {taskName: taskName, dateOfAdding: result.dateOfAdding, dueDate: dueDate, priority: priority, completed: completed, taskId: taskId}});
 									pool.close();
 								} catch (err) {
 									pool.close();

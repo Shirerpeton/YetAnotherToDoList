@@ -137,13 +137,13 @@ describe('index page', () => {
 				request.query.returns({recordset: [{id: 0}]});
 				agent
 				.post('/projects/0/tasks')
-				.send({taskName: 'testTaskname', dueDate: new Date(), priority: 0})
+				.send({taskName: 'testTaskName', dueDate: new Date(), priority: 0})
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
-					expect(res.body.taskName).to.be.equal('testTaskname');
-					expect(res.body.taskId).to.be.equal(0);
-					expect(res.body.priority).to.be.equal(0);
+					expect(res.body.task.taskName).to.be.equal('testTaskName');
+					expect(res.body.task.taskId).to.be.equal(0);
+					expect(res.body.task.priority).to.be.equal(0);
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(pool.connect.calledOnce).to.be.true;
 					expect(pool.close.calledOnce).to.be.true;

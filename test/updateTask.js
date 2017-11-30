@@ -199,12 +199,12 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
-					expect(res.body.taskName).to.be.equal('newTestTaskName');
-					expect(res.body.taskId).to.be.equal(0);
-					expect(res.body.dateOfAdding).to.be.equal('someDate');
-					expect(res.body.dueDate).to.be.equal('someOtherDate');
-					expect(res.body.priority).to.be.null;
-					expect(res.body.completed).to.be.false;
+					expect(res.body.task.taskName).to.be.equal('newTestTaskName');
+					expect(res.body.task.taskId).to.be.equal(0);
+					expect(res.body.task.dateOfAdding).to.be.equal('someDate');
+					expect(res.body.task.dueDate).to.be.equal('someOtherDate');
+					expect(res.body.task.priority).to.be.null;
+					expect(res.body.task.completed).to.be.false;
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(db.isTaskInTheProject.calledOnce).to.be.true;
 					expect(pool.connect.called).to.be.true;
@@ -225,12 +225,12 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
-					expect(res.body.taskName).to.be.equal('newTestTaskName');
-					expect(res.body.taskId).to.be.equal(0);
-					expect(res.body.dateOfAdding).to.be.equal('someDate');
-					expect(res.body.dueDate).to.be.equal('someOtherDate');
-					expect(res.body.priority).to.be.equal(2);
-					expect(res.body.completed).to.be.true;
+					expect(res.body.task.taskName).to.be.equal('newTestTaskName');
+					expect(res.body.task.taskId).to.be.equal(0);
+					expect(res.body.task.dateOfAdding).to.be.equal('someDate');
+					expect(res.body.task.dueDate).to.be.equal('someOtherDate');
+					expect(res.body.task.priority).to.be.equal(2);
+					expect(res.body.task.completed).to.be.true;
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(db.isTaskInTheProject.calledOnce).to.be.true;
 					expect(pool.connect.called).to.be.true;

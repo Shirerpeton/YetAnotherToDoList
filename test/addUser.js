@@ -168,7 +168,7 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
-					expect(res.body.username).to.be.equal('testUsername1');
+					expect(res.body.user.username).to.be.equal('testUsername1');
 					expect(request.query.calledOnce).to.be.true;
 					expect(db.isUserInTheProject.callCount).to.be.equal(2);
 					expect(db.getUserByUsername.calledOnce).to.be.true;

@@ -91,10 +91,10 @@ describe('index page', () => {
 					expect(transaction.begin.calledOnce).to.be.true;
 					expect(transaction.commit.calledOnce).to.be.true;
 					expect(transaction.rollback.called).to.be.false;
-					expect(res.body.projectId).to.be.equal(0);
+					expect(res.body.project.projectId).to.be.equal(0);
 					expect(pool.connect.calledOnce).to.be.true;
 					expect(pool.close.calledOnce).to.be.true;
-					expect(res.body.projectName).to.be.equal('testProject');
+					expect(res.body.project.projectName).to.be.equal('testProject');
 					done();
 				})
 			});

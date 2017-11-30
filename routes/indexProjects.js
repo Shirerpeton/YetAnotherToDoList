@@ -82,7 +82,7 @@ router.post('/projects', async (req, res) => {
 						.input('projId', sql.Int, result.recordset[0].id)
 						.query('insert into usersProjects (username, projectId) values (@login, @projId)');
 						await transaction.commit();
-						res.json({error: null, projectId: result.recordset[0].id , projectName: projName});
+						res.json({error: null, project: {projectId: result.recordset[0].id , projectName: projName}});
 					} catch (err) {
 						try {
 							await transaction.rollback();
@@ -198,7 +198,7 @@ router.put('/projects/:projId/', async (req, res) => {
 							.input('projId', sql.Int, projId)
 							.input('projName', sql.VarChar(50), projName)
 							.query('update projects set projectName = @projName where projectId = @projId');
-							res.json({error: null, projectName: projName, projectId: projId});
+							res.json({error: null, project: {projectName: projName, projectId: projId}});
 							pool.close();
 						}
 					} catch (err) {
