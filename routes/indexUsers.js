@@ -49,7 +49,7 @@ router.post('/projects/:projId/users', async (req, res) => {
 					res.json({error: "You are not in this project!"});
 				else
 				{
-					if (db.getUserByUsername(username) === null)
+					if ((await db.getUserByUsername(username)) === null)
 						res.json({error: "Such user does not exist!"});
 					else
 					{

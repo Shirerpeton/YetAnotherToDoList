@@ -33,6 +33,7 @@ block content
 					input(id='projName', type='text', class='col-10 form-control', name='projName', placeholder='Project name',  oninvalid="this.setCustomValidity('Please Enter Project Name')"
  oninput="setCustomValidity('')")
 					button(type='submit', class='col-2 btn btn-dark btn-block', id='submitProj') +
+					div(class='invalid-feedback', id='invProj')
 			form(id='renameProjForm', class='hidden', method='post')
 				div(class='form-group row')
 					input(id ='newProjName', type='text', class='col-10 form-control', name='projName', placeholder='New project name',  oninvalid="this.setCustomValidity('Please Enter New Project Name')"
@@ -56,3 +57,4 @@ block content
  oninput="setCustomValidity('')")
 					button(type='submit', class='col-1 btn btn-dark btn-block', id='submitTask') +
 	script(src='/javascripts/index.js')
+					div(class='invalid-feedback', id='invTask')

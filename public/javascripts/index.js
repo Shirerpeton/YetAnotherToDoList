@@ -24,29 +24,29 @@ $("#addTask").click(function(){
 	$('#taskName').focus();
 });
 
-$("#addProjForm").submit(function(event){
-    // cancels the form submission
-    event.preventDefault();
-	submitProjForm();
+$("#addProjForm").submit(event => {
+	event.preventDefault();
 });
 
-$("#addUserForm").submit(function(event){
-    // cancels the form submission
-    event.preventDefault();
-	submitUserForm();
+$("#addProjForm").submit(submitProjForm);
+
+$("#addUserForm").submit(event => {
+	event.preventDefault();
 });
 
-$("#renameProjForm").submit(function(event){
-    // cancels the form submission
-    event.preventDefault();
-	submitRenameProjForm();
+$("#addUserForm").submit(submitUserForm);
+
+$("#renameProjForm").submit(event => {
+	event.preventDefault();
 });
 
-$("#addTaskForm").submit(function(event){
-    // cancels the form submission
-    event.preventDefault();
-	submitTaskForm();
+$("#renameProjForm").submit(submitRenameProjForm);
+
+$("#addTaskForm").submit(event => {
+	event.preventDefault();
 });
+
+$("#addTaskForm").submit(submitTaskForm);
 
 function addProject(project) {
 	const delLink = $('<a></a>').text('Delete');
@@ -154,8 +154,7 @@ function loadTasks() {
 	});
 }
 
-function deleteProj(event)
-{
+function deleteProj(event) {
 	event.preventDefault();
 	let number = $(this).parent().parent().parent().index();
 	let projId = $('#projectList').children().eq(number).children().eq(1).attr('data-projId');
@@ -172,8 +171,7 @@ function deleteProj(event)
 	});
 }
 
-function deleteUser(event)
-{
+function deleteUser(event) {
 	event.preventDefault();
 	let number = $(this).parent().parent().parent().index();
 	console.log($('#userList').children().eq(number).children().eq(1).text());
@@ -190,8 +188,7 @@ function deleteUser(event)
 	});
 }
 
-function renameTask(taskId)
-{
+function renameTask(taskId) {
 	let taskNumber = $('#taskList').children().length;
 	return (event) => {
 		event.preventDefault();
@@ -203,8 +200,7 @@ function deleteTask(event)
 	event.preventDefault();
 }
 
-function renameProj(projId)
-{
+function renameProj(projId) {
 	let projNumber = $('#projectList').children().length;
 	return (event) => {
 		event.preventDefault();
@@ -218,97 +214,102 @@ function renameProj(projId)
 	}
 }
 
-function submitRenameProjForm()
-{
+function submitRenameProjForm() {
 	const formData = { 'projectName': $('#newProjName').val() };
-	if (formData.projectName === '')
-	{
+	if (formData.projectName === '') {
 		$('#newProjName').attr('class', 'col-10 form-control');
 		$('#renameProjForm').hide();
 		$('#addProj').slideToggle();
 	}
-	else
+	else {
+		$('#renameProjForm').off('submit', submitRenameProjForm);
 		$.ajax({
 			type: 'PUT',
 			url: '/projects/' + $('#renameProjForm').attr('data-projId') + '/',
 			data: formData,
 			success : function(response) {
-				if (response.error !== null)
-				{
-					$('#newProjName').attr('class', 'col-10 form-control is-invalid');
-					$('#invNewProjName').text(response.error);
-				}
-				else
-				{
+				if (response.error === null) {
 					$('#projectList').children().eq($('#renameProjForm').attr('data-projNumber')).children().eq(1).text(response.projectName);
 					$('#newProjName').attr('class', 'col-10 form-control');
 					$('#renameProjForm').hide();
 					$('#addProj').slideToggle();
 					$('#newProjName').val('');
 				}
+				else {
+					$('#newProjName').attr('class', 'col-10 form-control is-invalid');
+					$('#invNewProjName').text(response.error);
+				}
+				$('#renameProjForm').submit(submitRenameProjForm);
 			}
 		});
+	}
 }
 
-function submitUserForm()
-{
+function submitUserForm() {
 	const formData = { 'username': $('#username').val() };
-	if (formData.username === '')
-	{
+	if (formData.username === '') {
 		$('#username').attr('class', 'col-10 form-control');
 		$('#addUserForm').hide();
 		$('#addUser').slideToggle();
 	}
-	else
-	{
-		$('#username').attr('class', 'col-10 form-control');
-		$('#addUserForm').hide();
-		$('#addUser').slideToggle();
-		$('#username').val('');
+	else {
+		$('#addUserForm').off('submit', submitUserForm);
 		$.ajax({
 			type: 'POST',
 			url: 'users/',
 			data: formData,
 			success : function(response) {
-				if (response.error === null)
+				if (response.error === null) {
+					$('#username').attr('class', 'col-10 form-control');
+					$('#addUserForm').hide();
+					$('#addUser').slideToggle();
+					$('#username').val('');
 					addUser(response);
-				else
-					console.log(response.error);
+				}
+				else {
+					$('#username').attr('class', 'col-10 form-control is-invalid');
+					$('#invUsername').text(response.error);
+				}
+				$('#addUserForm').submit(submitUserForm);
 			}
 		});
 	}
 }
 
-function submitProjForm()
-{
+function submitProjForm() {
 	const formData = { 'projectName': $('#projName').val() };
-	if (formData.projName === '')
+	if (formData.projectName === '')
 	{
 		$('#addProjForm').hide();
 		$('#addProj').slideToggle();
 	}
 	else
 	{
-		$('#projName').attr('class', 'col-10 form-control');
-		$('#addProjForm').hide();
-		$('#addProj').slideToggle();
-		$('#projName').val('');
+		$('#addProjForm').off('submit', submitProjForm);
 		$.ajax({
 			type: 'POST',
 			url: '/projects',
 			data: formData,
 			success : function(response) {
 				if (response.error === null)
+				{
+					$('#projName').attr('class', 'col-10 form-control');
+					$('#addProjForm').hide();
+					$('#addProj').slideToggle();
+					$('#projName').val('');
 					addProject(response);
-				else
-					console.log(response.error);
+				}
+				else {
+					$('#projName').attr('class', 'col-10 form-control is-invalid');
+					$('#invProj').text(response.error);
+				}
+				$('#addProjForm').submit(submitProjForm);
 			}
 		});
 	}
 }
 
-function submitTaskForm()
-{
+function submitTaskForm() {
 	const formData = { 'taskName': $('#taskName').val(), 'dueDate' : 'aaaa'};
 	if (formData.taskName === '')
 	{
@@ -317,19 +318,24 @@ function submitTaskForm()
 	}
 	else
 	{
-		$('#taskName').attr('class', 'col-10 form-control');
-		$('#addTaskForm').hide();
-		$('#addTask').slideToggle();
-		$('#taskName').val('');
+		$('#addTaskForm').off('submit', submitTaskForm);
 		$.ajax({
 			type: 'POST',
 			url: 'tasks/',
 			data: formData,
 			success : function(response) {
-				if (response.error === null)
+				if (response.error === null) {
+					$('#taskName').attr('class', 'col-10 form-control');
+					$('#addTaskForm').hide();
+					$('#addTask').slideToggle();
+					$('#taskName').val('');
 					addTask(response);
-				else
-					console.log(response.error);
+				}
+				else {
+					$('#taskName').attr('class', 'col-10 form-control is-invalid');
+					$('#invTask').text(response.error);
+				}
+				$('#addTaskForm').submit(submitTaskForm);
 			}
 		});
 	}
