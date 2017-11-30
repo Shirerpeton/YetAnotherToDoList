@@ -85,13 +85,13 @@ router.get('/tdel', async (req, res) => {
 	}
 });
 
-/* router.get('/alter', async (req, res) => {
+router.get('/alter', async (req, res) => {
 	try {
 		const pool = new sql.ConnectionPool(db.config);
 		try {
 			await pool.connect();
 			const result = await pool.request()
-			.query('alter table tasks alter column dateOfAdding datetime NULL');
+			.query('alter table tasks add completed bit not null');
 			pool.close();
 			console.log(result);
 		} catch (err) {
@@ -101,7 +101,7 @@ router.get('/tdel', async (req, res) => {
 	} catch (err) {
 		console.log(err);
 	}
-}); */
+});
 
 router.get('/tableinfo/:table/', async (req, res) => {
 	try {

@@ -73,7 +73,7 @@ router.post('/projects/:projId/tasks', async (req, res) => {
 							.input('date', sql.VarChar, currentDate.toISOString())
 							.input('dueDate', sql.VarChar, dueDate.isValid() ? dueDate.toISOString() : null)
 							.input('priority', sql.Int, priority)
-							.query('insert into tasks (taskName, projectId, dateOfAdding, dueDate, priority) values (@taskName, @projId, @date, @dueDate, @priority); SELECT SCOPE_IDENTITY() AS id');
+							.query('insert into tasks (taskName, projectId, dateOfAdding, dueDate, priority, completed) values (@taskName, @projId, @date, @dueDate, @priority, 0); SELECT SCOPE_IDENTITY() AS id');
 							res.json({error: null, taskName: taskName, date: currentDate.format(), dueDate: dueDate.format(), priority: priority, taskId: result.recordset[0].id});
 							pool.close();
 						} catch (err) {

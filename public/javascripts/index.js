@@ -279,7 +279,7 @@ function submitUserForm()
 
 function submitProjForm()
 {
-	const formData = { 'projName': $('#projName').val() };
+	const formData = { 'projectName': $('#projName').val() };
 	if (formData.projName === '')
 	{
 		$('#addProjForm').hide();
