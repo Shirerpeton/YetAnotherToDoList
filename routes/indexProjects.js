@@ -1,20 +1,26 @@
 'use strict';
 
-const express = require('express');
-const router = express.Router();
-const sql = require('mssql');
-const db = require('../bin/db.js');
+const express = require('express')
+	, router = express.Router()
+	, sql = require('mssql')
+	, db = require('../bin/db.js')
+	, Ajv = require('ajv')
+	, ajv = new Ajv()
+	, schemas = require('../bin/jsonSchemas.js');
 
-router.get('/projects', async(req, res) => {
+const addProjectValidation = ajv.compile(schemas.addProject);
+const renameProjectValidation = ajv.compile(schemas.renameProject);
+	
+router.get('/', async (req, res) => {
 	try {
 		const login = req.session.user;
 		if (login !== undefined)
-			res.json({error: null, projects: await db.getProjectsOfUser(login)});
+			res.render('index', {title: 'Yet Another ToDo List', profile: login});
 		else
-			res.json({error: 'You are not logged!'});
+			res.render('welcome', {title: 'Welcome to the Yet Another ToDo List'});
 	} catch (err) {
 		console.log(err);
-		res.json({error: 'Iternal error!'});
+		res.status(500).render('error', { profile: req.session.user, title: 'error', message: 'Iternal error!'});
 	}
 });
 
@@ -27,18 +33,35 @@ router.get('/projects/:projId', async (req, res) => {
 			res.redirect('/');
 	} catch (err) {
 		console.log(err);
-		res.render('error', { profile: req.session.user, message: 'Iternal error!'})
+		res.status(500).render('error', { profile: req.session.user, message: 'Iternal error!'})
+	}
+});
+
+router.use((req, res, next) => {
+	if (req.session.user !== undefined)
+		next();
+	else
+		res.json({error: 'You are not logged!'});
+});
+
+router.get('/projects', async(req, res) => {
+	try {
+		const login = req.session.user;
+			res.json({error: null, projects: await db.getProjectsOfUser(login)});
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({error: 'Iternal error!'});
 	}
 });
 
 router.post('/projects', async (req, res) => {
 	try {
 		const login = req.session.user;
-		if (login === undefined)
-			res.json({error: 'You are not logged!'})
+		if (!addProjectValidation(req.body))
+			res.json({"error": "Invalid request!", "errorDetails": addProjectValidation.errors});
 		else
 		{
-			const projName = req.body.projName;
+			const projName = req.body.projectName;
 			if (projName.length === 0)
 				res.json({error: 'Project name can not be empty!'});
 			else if (projName.length > 50)
@@ -77,7 +100,7 @@ router.post('/projects', async (req, res) => {
 		}
 	} catch (err) {
 		console.log(err);
-		res.json({error: 'Iternal error!'});
+		res.status(500).json({error: 'Iternal error!'});
 	}
 });
 
@@ -85,62 +108,57 @@ router.post('/projects', async (req, res) => {
 router.delete('/projects/:projId', async (req, res) => {
 	try {
 		const login = req.session.user;
-		if (login === undefined)
-			res.json({error: 'You are not logged!'});
+		const projId = Number(req.params.projId);
+		if (isNaN(projId))
+			res.json({error : 'Invalid project ID!'});
 		else
 		{
-			const projId = Number(req.params.projId);
-			if (isNaN(projId))
-				res.json({error : 'Invalid project ID!'});
-			else
-			{
-				const pool = new sql.ConnectionPool(db.config);
-				try {
-					await pool.connect();
-					const result = await pool.request()
-					.input('login', sql.VarChar(20), login)
-					.input('projId', sql.Int, projId)
-					.query('select * from usersProjects as up inner join users as u on (u.username = up.username and u.username = @login) inner join projects as p on (p.projectId = up.projectId and p.projectId = @projId)')
-					if (!result.recordset.length)
-					{
-						res.json({ error: "You are not in this project!" });
-						pool.close();
-					}
-					else
-					{
-						let transaction = pool.transaction();
-						try {
-							await transaction.begin();
-							await transaction.request()
-							.input('projId', sql.Int, projId)
-							.query('delete from tasks where projectId = @projId');
-							await transaction.request()
-							.input('projId', sql.Int, projId)
-							.query('delete from usersProjects where projectId = @projId');
-							await transaction.request()
-							.input('projId', sql.Int, projId)
-							.query('delete from projects where projectId = @projId');
-							await transaction.commit();
-							res.json({error: null});
-							pool.close();
-						} catch (err) {
-							try {
-								await transaction.rollback();
-							} catch (err) {
-								console.log(err);
-							}
-							throw (err);
-						}
-					}
-				} catch (err) {
+			const pool = new sql.ConnectionPool(db.config);
+			try {
+				await pool.connect();
+				const result = await pool.request()
+				.input('login', sql.VarChar(20), login)
+				.input('projId', sql.Int, projId)
+				.query('select * from usersProjects as up inner join users as u on (u.username = up.username and u.username = @login) inner join projects as p on (p.projectId = up.projectId and p.projectId = @projId)')
+				if (!result.recordset.length)
+				{
+					res.json({ error: "You are not in this project!" });
 					pool.close();
-					throw(err);
 				}
+				else
+				{
+					let transaction = pool.transaction();
+					try {
+						await transaction.begin();
+						await transaction.request()
+						.input('projId', sql.Int, projId)
+						.query('delete from tasks where projectId = @projId');
+						await transaction.request()
+						.input('projId', sql.Int, projId)
+						.query('delete from usersProjects where projectId = @projId');
+						await transaction.request()
+						.input('projId', sql.Int, projId)
+						.query('delete from projects where projectId = @projId');
+						await transaction.commit();
+						res.json({error: null});
+						pool.close();
+					} catch (err) {
+						try {
+							await transaction.rollback();
+						} catch (err) {
+							console.log(err);
+						}
+						throw (err);
+					}
+				}
+			} catch (err) {
+				pool.close();
+				throw(err);
 			}
 		}
 	} catch (err) {
 		console.log(err);
-		res.json({error: 'Iternal error!'});
+		res.status(500).json({error: 'Iternal error!'});
 	}
 });
 
@@ -148,8 +166,8 @@ router.delete('/projects/:projId', async (req, res) => {
 router.put('/projects/:projId/', async (req, res) => {
 	try {
 		const login = req.session.user;
-		if (login === undefined)
-			res.json({error: 'You are not logged!'});
+		if (!renameProjectValidation(req.body))
+			res.json({"error": "Invalid request!", "errorDetails": renameProjectValidation.errors});
 		else
 		{
 			const projId = Number(req.params.projId);
@@ -192,7 +210,7 @@ router.put('/projects/:projId/', async (req, res) => {
 		}
 	} catch (err) {
 		console.log(err);
-		res.json({error: 'Iternal error!'});
+		res.status(500).json({error: 'Iternal error!'});
 	}
 });
 

@@ -58,6 +58,18 @@ describe('/users/sign-in', () => {
 			sandbox.stub(db, 'getUserByUsername').withArgs('testUsername').returns({username: 'testUsername', passwordHash: 'testHash'});
 			sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
 		});
+		describe('with invalid request', () => {
+			it('loggs user into system', done => {
+				chai.request(server)
+				.post('/users/sign-in')
+				.send({myUsername: 'testUsername', muPassword: 'testPassword'})
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('Invalid request!');
+					done();
+				});
+			});
+		});
 		describe('with proper data', () => {
 			it('loggs user into system', done => {
 				chai.request(server)

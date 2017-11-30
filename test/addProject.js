@@ -65,12 +65,25 @@ describe('index page', () => {
 			server.close();
 			done();
 		});
+		describe('post to "/projects" with invalid request', () => {
+			it('sends json with proper error', done => {
+				request.query.onFirstCall().returns({recordset: [{id: 0}]});
+				agent
+				.post('/projects')
+				.send({newProjectName: 'testProject'})
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('Invalid request!');
+					done();
+				})
+			});
+		});
 		describe('post to "/projects" with proper data', () => {
 			it('creates new project and sends json without errors', done => {
 				request.query.onFirstCall().returns({recordset: [{id: 0}]});
 				agent
 				.post('/projects')
-				.send({projName: 'testProject'})
+				.send({projectName: 'testProject'})
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
@@ -90,7 +103,7 @@ describe('index page', () => {
 			it('sends json with proper error', done => {
 				agent
 				.post('/projects')
-				.send({projName: 'absolutelyDefinetelyMoreThanMaximum50CharactersLongNameForMyProject'})
+				.send({projectName: 'absolutelyDefinetelyMoreThanMaximum50CharactersLongNameForMyProject'})
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.equal('Project name must be no more than 50 characters long!');
@@ -106,9 +119,9 @@ describe('index page', () => {
 				request.query.onFirstCall().throws('Database error!');
 				agent
 				.post('/projects')
-				.send({projName: 'testProject'})
+				.send({projectName: 'testProject'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err.status).to.be.equal(500);
 					expect(res.body.error).to.be.equal('Iternal error!');
 					expect(request.query.calledOnce).to.be.true;
 					expect(transaction.begin.calledOnce).to.be.true;

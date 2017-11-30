@@ -98,10 +98,11 @@ describe('index page', () => {
 				chai.request(server)
 				.post('/projects')
 				.send({projName: 'testProject'})
-				.then(res => {
-					expect(res.body.error).to.be.equal("You are not logged!");
-					expect(request.query.called).to.be.false;
-				}).then(done).catch(console.log);
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('You are not logged!');
+					done();
+				});
 			});
 		});
 		describe('post to "/projects/0/users"', () => {
@@ -109,30 +110,33 @@ describe('index page', () => {
 				chai.request(server)
 				.post('/projects/0/users')
 				.send({username: 'testUsername'})
-				.then(res => {
-					expect(res.body.error).to.be.equal("You are not logged!");
-					expect(request.query.called).to.be.false;
-				}).then(done).catch(console.log);
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('You are not logged!');
+					done();
+				});
 			});
 		});
 		describe('delete to "/projects/0"', () => {
 			it('sends json with proper error', done => {
 				chai.request(server)
 				.delete('/projects/0')
-				.then(res => {
-					expect(res.body.error).to.be.equal("You are not logged!");
-					expect(request.query.called).to.be.false;
-				}).then(done).catch(console.log);
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('You are not logged!');
+					done();
+				});
 			});
 		});
 		describe('delete to "/projects/0/users/testUsername"', () => {
 			it('sends json with proper error', done => {
 				chai.request(server)
 				.delete('/projects/0/users/testUsername')
-				.then(res => {
-					expect(res.body.error).to.be.equal("You are not logged!");
-					expect(request.query.called).to.be.false;
-				}).then(done).catch(console.log);
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('You are not logged!');
+					done();
+				});
 			});
 		});
 		describe('put to "/projects/0/"', () => {
@@ -140,10 +144,11 @@ describe('index page', () => {
 				chai.request(server)
 				.put('/projects/0/')
 				.send({projectName: 'newProjectName'})
-				.then(res => {
-					expect(res.body.error).to.be.equal("You are not logged!");
-					expect(request.query.called).to.be.false;
-				}).then(done).catch(console.log);
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal('You are not logged!');
+					done();
+				});
 			});
 		});
 		describe('get to "/projects/0/tasks"', () => {
@@ -165,9 +170,6 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.equal('You are not logged!');
-					expect(pool.connect.called).to.be.false;
-					expect(pool.close.called).to.be.false;
-					expect(request.query.called).to.be.false;
 					done();
 				});
 			});
@@ -293,7 +295,7 @@ describe('index page', () => {
 				agent
 				.delete('/projects/0')
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err.status).to.be.equal(500);
 					expect(res.body.error).to.be.equal("Iternal error!");
 					expect(request.query.calledOnce).to.be.true;
 					expect(pool.connect.calledOnce).to.be.true;
@@ -309,7 +311,7 @@ describe('index page', () => {
 				agent
 				.delete('/projects/0')
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err.status).to.be.equal(500);
 					expect(res.body.error).to.be.equal("Iternal error!");
 					expect(request.query.callCount).to.be.equal(2);
 					expect(pool.connect.calledOnce).to.be.true;

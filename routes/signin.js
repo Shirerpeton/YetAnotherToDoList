@@ -1,12 +1,12 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const router = express.Router();
-const sql = require('mssql');
-const bcrypt = require('../bin/bcryptPromise.js');
-const Ajv = require('ajv');
-const ajv = new Ajv();
-const schemas = require('../bin/jsonSchemas.js');
-const db = require('../bin/db.js');
+const express = require('express')
+	, bodyParser = require('body-parser')
+	, router = express.Router()
+	, sql = require('mssql')
+	, bcrypt = require('../bin/bcryptPromise.js')
+	, Ajv = require('ajv')
+	, ajv = new Ajv()
+	, schemas = require('../bin/jsonSchemas.js')
+	, db = require('../bin/db.js');
 
 const signinValidation = ajv.compile(schemas.signin);
 
@@ -14,9 +14,7 @@ router.get('/', function(req, res, next) {
 	if(req.session.user !== undefined)
 		res.redirect('/');
 	else
-	{
 		res.render('signin', { title: 'Sign-In', profile: null, signIn: true });
-	}
 });
 
 router.post('/', async (req, res, next) => {

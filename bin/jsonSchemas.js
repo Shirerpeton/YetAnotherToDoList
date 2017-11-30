@@ -35,4 +35,44 @@ schemas.signup = {
 	"required": ["username", "password", "repeatPassword"]
 };
 
+schemas.addProject = {
+	"$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Add project",
+    "description": "Add project request schema",
+    "type": "object",
+	"properties": {
+		"projectName": {
+			"type": "string"
+		}
+	},
+	"required": ["projectName"]
+};
+
+schemas.renameProject = {
+	"$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Rename project",
+    "description": "Rename project request schema",
+    "type": "object",
+	"properties": {
+		"projectName": {
+			"type": "string"
+		}
+	},
+	"required": ["projectName"]
+};
+
+
+schemas.addUser = {
+	"$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Add user project",
+    "description": "Add user request schema",
+    "type": "object",
+	"properties": {
+		"username": {
+			"type": "string"
+		}
+	},
+	"required": ["username"]
+};
+
 module.exports = schemas;

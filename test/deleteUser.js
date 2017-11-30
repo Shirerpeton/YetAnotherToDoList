@@ -119,7 +119,7 @@ describe('index page', () => {
 				agent
 				.delete('/projects/0/users/testUsername1')
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err.status).to.be.equal(500);
 					expect(res.body.error).to.be.equal('Iternal error!');
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(request.query.called).to.be.false;
@@ -137,7 +137,7 @@ describe('index page', () => {
 				agent
 				.delete('/projects/0/users/testUsername1')
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err.status).to.be.equal(500);
 					expect(res.body.error).to.be.equal("Iternal error!");
 					expect(request.query.calledOnce).to.be.true;
 					expect(db.isUserInTheProject.callCount).to.be.equal(2);

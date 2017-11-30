@@ -65,6 +65,24 @@ describe('index page', () => {
 			server.close();
 			done();
 		});
+		describe('post to "/projects/0/users" (with invalid request)', () => {
+			it('sends json with proper error', done => {
+				agent
+				.post('/projects/0/users')
+				.send({newUserUsername: 'testUsername'})
+				.end((err, res) => {
+					console.log(err);
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.equal("Invalid request!");
+					expect(db.isUserInTheProject.called).to.be.false;
+					expect(db.getUserByUsername.called).to.be.false;
+					expect(request.query.called).to.be.false;
+					expect(pool.connect.called).to.be.false;
+					expect(pool.close.called).to.be.false;
+					done();
+				});
+			});
+		});
 		describe('post to "/projects/badId/users" (with bad project ID)', () => {
 			it('sends json with proper error', done => {
 				agent
@@ -139,7 +157,7 @@ describe('index page', () => {
 				});
 			});
 		});
-		describe('post to "/projects/0/users"  with proper data', () => {
+		describe('post to "/projects/0/users" with proper data', () => {
 			it('adds new user to the project and sends json without errors and with username', done => {
 				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
 				db.getUserByUsername.withArgs('testUsername1').returns({uername: 'testUsername'});

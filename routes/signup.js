@@ -17,7 +17,7 @@ router.get('/', function(req, res, next) {
 		res.redirect('/');
 });
 
-router.get('/info', (req, res, next) => {
+/* router.get('/info', (req, res, next) => {
 	const pool = new sql.ConnectionPool(db.config);
 		pool.connect(err => {
 			pool.request().query('select * from users', (err, result) => {
@@ -25,7 +25,7 @@ router.get('/info', (req, res, next) => {
 				console.log(result.recordset);
 			});
 		});
-});
+}); */
 
 router.post('/', async (req, res, next) => {
 	try {

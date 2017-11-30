@@ -9,37 +9,32 @@ const moment = require('moment');
 router.get('/projects/:projId/tasks', async (req, res) => {
 	try {
 		const login = req.session.user;
-		if (login === undefined)
-			res.json({error: 'You are not logged!'});
+		const projId = Number(req.params.projId);
+		if (isNaN(projId))
+			res.json({error : 'Invalid project ID!'});
 		else
 		{
-			const projId = Number(req.params.projId);
-			if (isNaN(projId))
-				res.json({error : 'Invalid project ID!'});
+			if (!(await db.isUserInTheProject(login, projId)))
+					res.json({error : 'You are not in this project!'});
 			else
 			{
-				if (!(await db.isUserInTheProject(login, projId)))
-						res.json({error : 'You are not in this project!'});
-				else
-				{
-					const pool = new sql.ConnectionPool(db.config);
-					try {
-						await pool.connect();
-						const result = await pool.request()
-						.input('projId', sql.Int, projId)
-						.query('select * from tasks where (projectId = @projId)');
-						res.json({error: null, tasks: result.recordset});
-						pool.close();
-					} catch (err) {
-						pool.close();
-						throw err;
-					}
+				const pool = new sql.ConnectionPool(db.config);
+				try {
+					await pool.connect();
+					const result = await pool.request()
+					.input('projId', sql.Int, projId)
+					.query('select * from tasks where (projectId = @projId)');
+					res.json({error: null, tasks: result.recordset});
+					pool.close();
+				} catch (err) {
+					pool.close();
+					throw err;
 				}
 			}
 		}
 	} catch (err) {
 		console.log(err);
-		res.json({error: "Iternal error!"});
+		res.status(500).json({error: 'Iternal error!'});
 	}
 });
 

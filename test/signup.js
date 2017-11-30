@@ -75,7 +75,7 @@ describe('/users/sign-up', () => {
 			it('register new user', done => {
 				chai.request(server)
 				.post('/users/sign-up')
-				.send({username: 'anotherUsername', password: 'testPassword', repPassword: 'testPassword'})
+				.send({username: 'anotherUsername', password: 'testPassword', repeatPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.null;
 					expect(request.query.calledOnce).to.be.true;
@@ -83,11 +83,23 @@ describe('/users/sign-up', () => {
 				}).then(done).catch(console.log);
 			});
 		});
-		describe('with with too short login', () => {
+		describe('with invalid request', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
 				.post('/users/sign-up')
-				.send({username: 'use', password: 'testPassword', repPassword: 'testPassword'})
+				.send({myUsername: 'use', myPassword: 'testPassword', repeatMyPassword: 'testPassword'})
+				.then(res => {
+					expect(res.body.error).to.be.equal("Invalid request!");
+					expect(request.query.called).to.be.false;
+					expect(bcrypt.promiseHash.called).to.be.false;
+				}).then(done).catch(console.log);
+			});
+		});
+		describe('with too short login', () => {
+			it('send json with proper error', (done) => {
+				chai.request(server)
+				.post('/users/sign-up')
+				.send({username: 'use', password: 'testPassword', repeatPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Username must be no less than 4 characters long!");
 					expect(request.query.called).to.be.false;
@@ -95,11 +107,11 @@ describe('/users/sign-up', () => {
 				}).then(done).catch(console.log);
 			});
 		});
-		describe('with with too long login', () => {
+		describe('with too long login', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
 				.post('/users/sign-up')
-				.send({username: 'definetlyMoreThanRequired20CharacterLongUsername', password: 'testPassword', repPassword: 'testPassword'})
+				.send({username: 'definetlyMoreThanRequired20CharacterLongUsername', password: 'testPassword', repeatPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Username must be no more than 20 characters long!");
 					expect(request.query.called).to.be.false;
@@ -107,11 +119,11 @@ describe('/users/sign-up', () => {
 				}).then(done).catch(console.log);
 			});
 		});
-		describe('with with too short password', () => {
+		describe('with too short password', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
 				.post('/users/sign-up')
-				.send({username: 'anotherUsername', password: 'test', repPassword: 'test'})
+				.send({username: 'anotherUsername', password: 'test', repeatPassword: 'test'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Password must be at least 6 characters long!");
 					expect(request.query.called).to.be.false;
@@ -119,11 +131,11 @@ describe('/users/sign-up', () => {
 				}).then(done).catch(console.log);
 			});
 		});
-		describe('with with too long password', () => {
+		describe('with too long password', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
 				.post('/users/sign-up')
-				.send({username: 'anotherUsername', password: 'definetlyMoreThanRequired20CharacterLongPassowrd', repPassword: 'definetlyMoreThanRequired20CharacterLongPassowrd'})
+				.send({username: 'anotherUsername', password: 'definetlyMoreThanRequired20CharacterLongPassowrd', repeatPassword: 'definetlyMoreThanRequired20CharacterLongPassowrd'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Password must be no more than 20 characters long!");
 					expect(request.query.called).to.be.false;
@@ -131,11 +143,11 @@ describe('/users/sign-up', () => {
 				}).then(done).catch(console.log);
 			});
 		});
-		describe('with with passwords that do not match', () => {
+		describe('with passwords that do not match', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
 				.post('/users/sign-up')
-				.send({username: 'anotherUsername', password: 'testPassword', repPassword: 'anotherPassword'})
+				.send({username: 'anotherUsername', password: 'testPassword', repeatPassword: 'anotherPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Passwords must match!");
 					expect(request.query.called).to.be.false;
@@ -147,7 +159,7 @@ describe('/users/sign-up', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
 				.post('/users/sign-up')
-				.send({username: 'testUsername', password: 'testPassword', repPassword: 'testPassword'})
+				.send({username: 'testUsername', password: 'testPassword', repeatPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("That username is already taken!");
 					expect(request.query.called).to.be.false;
