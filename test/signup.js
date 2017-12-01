@@ -40,7 +40,7 @@ describe('/users/sign-up', () => {
 		describe('while not logged', done => {
 			it('responds with sign-up page', done => {
 				chai.request(server)
-				.get('/users/sign-up')
+				.get('/sign-up')
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res).to.have.status(200);
@@ -54,7 +54,7 @@ describe('/users/sign-up', () => {
 				sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
 				let agent = chai.request.agent(server);
 				agent
-				.post('/users/sign-in')
+				.post('/sign-in')
 				.send({username: 'testUsername', password: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.null;
@@ -74,7 +74,7 @@ describe('/users/sign-up', () => {
 		describe('with proper data', () => {
 			it('register new user', done => {
 				chai.request(server)
-				.post('/users/sign-up')
+				.post('/sign-up')
 				.send({username: 'anotherUsername', password: 'testPassword', repeatPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.null;
@@ -86,7 +86,7 @@ describe('/users/sign-up', () => {
 		describe('with invalid request', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
-				.post('/users/sign-up')
+				.post('/sign-up')
 				.send({myUsername: 'use', myPassword: 'testPassword', repeatMyPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Invalid request!");
@@ -98,7 +98,7 @@ describe('/users/sign-up', () => {
 		describe('with too short login', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
-				.post('/users/sign-up')
+				.post('/sign-up')
 				.send({username: 'use', password: 'testPassword', repeatPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Username must be no less than 4 characters long!");
@@ -110,7 +110,7 @@ describe('/users/sign-up', () => {
 		describe('with too long login', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
-				.post('/users/sign-up')
+				.post('/sign-up')
 				.send({username: 'definetlyMoreThanRequired20CharacterLongUsername', password: 'testPassword', repeatPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Username must be no more than 20 characters long!");
@@ -122,7 +122,7 @@ describe('/users/sign-up', () => {
 		describe('with too short password', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
-				.post('/users/sign-up')
+				.post('/sign-up')
 				.send({username: 'anotherUsername', password: 'test', repeatPassword: 'test'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Password must be at least 6 characters long!");
@@ -134,7 +134,7 @@ describe('/users/sign-up', () => {
 		describe('with too long password', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
-				.post('/users/sign-up')
+				.post('/sign-up')
 				.send({username: 'anotherUsername', password: 'definetlyMoreThanRequired20CharacterLongPassowrd', repeatPassword: 'definetlyMoreThanRequired20CharacterLongPassowrd'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Password must be no more than 20 characters long!");
@@ -146,7 +146,7 @@ describe('/users/sign-up', () => {
 		describe('with passwords that do not match', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
-				.post('/users/sign-up')
+				.post('/sign-up')
 				.send({username: 'anotherUsername', password: 'testPassword', repeatPassword: 'anotherPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("Passwords must match!");
@@ -158,7 +158,7 @@ describe('/users/sign-up', () => {
 		describe('with already taken login', () => {
 			it('send json with proper error', (done) => {
 				chai.request(server)
-				.post('/users/sign-up')
+				.post('/sign-up')
 				.send({username: 'testUsername', password: 'testPassword', repeatPassword: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.equal("That username is already taken!");

@@ -44,7 +44,7 @@ describe('index page', () => {
 			sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
 			agent = chai.request.agent(server);
 			agent
-			.post('/users/sign-in')
+			.post('/sign-in')
 			.send({username: 'testUsername', password: 'testPassword'})
 			.then(res => {
 				expect(res.body.error).to.be.null;
@@ -71,7 +71,7 @@ describe('index page', () => {
 				.post('/projects/0/tasks')
 				.send({tskName: 'testTaskname', dueDate: new Date(), priority: 0})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid request!');
 					expect(db.isUserInTheProject.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -87,7 +87,7 @@ describe('index page', () => {
 				.post('/projects/badID/tasks')
 				.send({taskName: 'testTaskname', dueDate: new Date(), priority: 0})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid project ID!');
 					expect(db.isUserInTheProject.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -104,7 +104,7 @@ describe('index page', () => {
 				.post('/projects/0/tasks')
 				.send({taskName: 'testTaskname', dueDate: new Date(), priority: 0})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(403);
 					expect(res.body.error).to.be.equal('You are not in this project!');
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(pool.connect.called).to.be.false;
@@ -121,7 +121,7 @@ describe('index page', () => {
 				.post('/projects/0/tasks')
 				.send({taskName: '', dueDate: new Date(), priority: 0})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Task name can not be empty!');
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(pool.connect.called).to.be.false;

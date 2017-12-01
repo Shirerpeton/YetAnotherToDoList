@@ -49,7 +49,7 @@ describe('index page', () => {
 			sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
 			agent = chai.request.agent(server);
 			agent
-			.post('/users/sign-in')
+			.post('/sign-in')
 			.send({username: 'testUsername', password: 'testPassword'})
 			.then(res => {
 				expect(res.body.error).to.be.null;
@@ -76,7 +76,7 @@ describe('index page', () => {
 				.put('/projects/0/')
 				.send({projectNewName: 'newProjectName'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid request!');
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -91,7 +91,7 @@ describe('index page', () => {
 				.put('/projects/badId/')
 				.send({projectName: 'newProjectName'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid project ID!');
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -107,7 +107,7 @@ describe('index page', () => {
 				.put('/projects/0/')
 				.send({projectName: 'absolutelyDefinetelyMoreThanMaximum50CharactersLongNewNameForMyProject'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Project name must be no more than 50 characters long!');
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -123,18 +123,15 @@ describe('index page', () => {
 				.put('/projects/0/')
 				.send({projectName: 'newProjectName'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(403);
 					expect(res.body.error).to.be.equal("You are not in this project!");
-					expect(request.query.calledOnce).to.be.true;
-					expect(pool.connect.calledOnce).to.be.true;
-					expect(pool.close.calledOnce).to.be.true;
 					done();
 				});
 			});
 		});
 		describe('put to "/projects/0/" with proper data', () => {
 			it('renames project and sends json without errors and with new project name', done => {
-				request.query.onFirstCall().returns({recordset: [{username: 'testUsername'}]});
+				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
 				agent
 				.put('/projects/0/')
 				.send({projectName: 'newProjectName'})
@@ -143,7 +140,7 @@ describe('index page', () => {
 					expect(res.body.error).to.be.null;
 					expect(res.body.project.projectName).to.be.equal('newProjectName');
 					expect(res.body.project.projectId).to.be.equal(0);
-					expect(request.query.callCount).to.be.equal(2);
+					expect(request.query.calledOnce).to.be.true;
 					expect(pool.connect.calledOnce).to.be.true;
 					expect(pool.close.calledOnce).to.be.true;
 					done();

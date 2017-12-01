@@ -65,44 +65,32 @@ describe('index page', () => {
 			server.close();
 			done();
 		});
-		describe('get to "/projects/badId/tasks" (with bad project ID)', () => {
-			it('sends json with proper error', done => {
+		describe('delete to "/projects/badId/tasks/0"', () => {
+			it('sens json with proper error', done => {
 				agent
-				.get('/projects/badId/tasks')
+				.delete('/projects/badId/tasks/0')
 				.end((err, res) => {
 					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid project ID!');
+					expect(db.isUserInTheProject.called).to.be.false;
+					expect(request.query.called).to.be.false;
+					expect(pool.connect.called).to.be.false;
+					expect(pool.close.called).to.be.false;
 					done();
 				});
 			});
 		});
-		describe('get to "/projects/0/tasks" without access to the project', () => {
-			it('sends json with proper error', done => {
-				db.isUserInTheProject.withArgs('testUsername', 0).returns(false);
+		describe('delete to "/projects/0/tasks/badId"', () => {
+			it('sens json with proper error', done => {
 				agent
-				.get('/projects/0/tasks')
+				.delete('/projects/0/tasks/badId')
 				.end((err, res) => {
-					expect(err).to.have.status(403);
-					expect(res.body.error).to.be.equal('You are not in this project!');
-					expect(db.isUserInTheProject.calledOnce).to.be.true;
-					done();
-				});
-			});
-		});
-		describe('get to "/projects/0/tasks" with proper data', () => {
-			it('sends json with task list and without errors', done => {
-				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
-				request.query.onFirstCall().returns({recordset : [{taskName: 'testTaskName'}]});
-				agent
-				.get('/projects/0/tasks')
-				.end((err, res) => {
-					expect(err).to.be.null;
-					expect(res.body.error).to.be.null;
-					expect(res.body.tasks).to.deep.equal([{taskName: 'testTaskName'}]);
-					expect(db.isUserInTheProject.calledOnce).to.be.true;
-					expect(pool.connect.calledOnce).to.be.true;
-					expect(pool.close.calledOnce).to.be.true;
-					expect(request.query.calledOnce).to.be.true;
+					expect(err).to.have.status(400);
+					expect(res.body.error).to.be.equal('Invalid task ID!');
+					expect(db.isUserInTheProject.called).to.be.false;
+					expect(request.query.called).to.be.false;
+					expect(pool.connect.called).to.be.false;
+					expect(pool.close.called).to.be.false;
 					done();
 				});
 			});

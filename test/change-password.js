@@ -86,7 +86,7 @@ describe('/change-password', () => {
 			sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
 			agent = chai.request.agent(server);
 			agent
-			.post('/users/sign-in')
+			.post('/sign-in')
 			.send({username: 'testUsername', password: 'testPassword'})
 			.then(res => {
 				expect(res.body.error).to.be.null;

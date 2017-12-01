@@ -45,7 +45,7 @@ describe('index page', () => {
 			sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
 			agent = chai.request.agent(server);
 			agent
-			.post('/users/sign-in')
+			.post('/sign-in')
 			.send({username: 'testUsername', password: 'testPassword'})
 			.then(res => {
 				expect(res.body.error).to.be.null;
@@ -72,7 +72,7 @@ describe('index page', () => {
 				.post('/projects/0/tasks')
 				.send({tskName: 'testTaskname'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.be.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid request!');
 					expect(db.isUserInTheProject.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -85,10 +85,10 @@ describe('index page', () => {
 		describe('put to "/projects/0/tasks/0" with invalid request', () => {
 			it('sends json with proper error', done => {
 				agent
-				.post('/projects/0/tasks')
+				.put('/projects/0/tasks/0')
 				.send({priority: 5})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.be.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid request!');
 					expect(db.isUserInTheProject.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -104,7 +104,7 @@ describe('index page', () => {
 				.put('/projects/badId/tasks/0')
 				.send({taskName: "newTestTaskName"})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.be.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid project ID!');
 					expect(db.isUserInTheProject.called).to.be.false;
 					expect(db.isTaskInTheProject.called).to.be.false;
@@ -121,7 +121,7 @@ describe('index page', () => {
 				.put('/projects/0/tasks/badId')
 				.send({taskName: "newTestTaskName"})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.be.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid task ID!');
 					expect(db.isUserInTheProject.called).to.be.false;
 					expect(db.isTaskInTheProject.called).to.be.false;
@@ -139,7 +139,7 @@ describe('index page', () => {
 				.put('/projects/0/tasks/0')
 				.send({taskName: "newTestTaskName"})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(403);
 					expect(res.body.error).to.be.equal('You are not in this project!');
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(db.isTaskInTheProject.called).to.be.false;
@@ -158,7 +158,7 @@ describe('index page', () => {
 				.put('/projects/0/tasks/0')
 				.send({taskName: "newTestTaskName"})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(404);
 					expect(res.body.error).to.be.equal('This task not in the project!');
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(db.isTaskInTheProject.calledOnce).to.be.true;
@@ -177,7 +177,7 @@ describe('index page', () => {
 				.put('/projects/0/tasks/0')
 				.send({taskName: ""})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Task name can not be empty!');
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(db.isTaskInTheProject.calledOnce).to.be.true;

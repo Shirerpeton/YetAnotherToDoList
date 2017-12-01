@@ -27,7 +27,7 @@ describe('/users/sign-in', () => {
 		describe('while not logged', done => {
 			it('responds with sign-in page', done => {
 				chai.request(server)
-				.get('/users/sign-in')
+				.get('/sign-in')
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res).to.have.status(200);
@@ -41,7 +41,7 @@ describe('/users/sign-in', () => {
 				sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
 				let agent = chai.request.agent(server)
 				agent
-				.post('/users/sign-in')
+				.post('/sign-in')
 				.send({username: 'testUsername', password: 'testPassword'})
 				.then(res => {
 					expect(res.body.error).to.be.null;
@@ -61,7 +61,7 @@ describe('/users/sign-in', () => {
 		describe('with invalid request', () => {
 			it('loggs user into system', done => {
 				chai.request(server)
-				.post('/users/sign-in')
+				.post('/sign-in')
 				.send({myUsername: 'testUsername', muPassword: 'testPassword'})
 				.end((err, res) => {
 					expect(err).to.be.null;
@@ -73,7 +73,7 @@ describe('/users/sign-in', () => {
 		describe('with proper data', () => {
 			it('loggs user into system', done => {
 				chai.request(server)
-				.post('/users/sign-in')
+				.post('/sign-in')
 				.send({username: 'testUsername', password: 'testPassword'})
 				.end((err, res) => {
 					expect(err).to.be.null;
@@ -85,7 +85,7 @@ describe('/users/sign-in', () => {
 		describe('with wrong login', () => {
 			it('send json with proper error', done => {
 				chai.request(server)
-				.post('/users/sign-in')
+				.post('/sign-in')
 				.send({username: 'wrongUsername', password: 'testPassword'})
 				.end((err, res) => {
 					expect(err).to.be.null;
@@ -97,7 +97,7 @@ describe('/users/sign-in', () => {
 		describe('with wrong password', () => {
 			it('send json with proper error', done => {
 				chai.request(server)
-				.post('/users/sign-in')
+				.post('/sign-in')
 				.send({username: 'testUsername', password: 'wrongPassword'})
 				.end((err, res) => {
 					expect(err).to.be.null;

@@ -17,11 +17,11 @@ router.get('/projects/:projId/tasks', async (req, res) => {
 		const login = req.session.user;
 		const projId = Number(req.params.projId);
 		if (isNaN(projId))
-			res.json({error : 'Invalid project ID!'});
+			res.status(400).json({error : 'Invalid project ID!'});
 		else
 		{
 			if (!(await db.isUserInTheProject(login, projId)))
-					res.json({error : 'You are not in this project!'});
+					res.status(403).json({error : 'You are not in this project!'});
 			else
 			{
 				const pool = new sql.ConnectionPool(db.config);
@@ -48,21 +48,21 @@ router.post('/projects/:projId/tasks', async (req, res) => {
 	try {
 		const login = req.session.user;
 		if (!addTaskValidation(req.body))
-			res.json({"error": "Invalid request!", "errorDetails": addTaskValidation.errors});
+			res.status(400).json({"error": "Invalid request!", "errorDetails": addTaskValidation.errors});
 		else
 		{
 			const projId = Number(req.params.projId);
 			if (isNaN(projId))
-				res.json({error : 'Invalid project ID!'});
+				res.status(400).json({error : 'Invalid project ID!'});
 			else
 			{
 				if (!(await db.isUserInTheProject(login, projId)))
-						res.json({error : 'You are not in this project!'});
+						res.status(403).json({error : 'You are not in this project!'});
 				else
 				{
 					const taskName = req.body.taskName;
 					if (taskName === '')
-						res.json({error: 'Task name can not be empty!'});
+						res.status(400).json({error: 'Task name can not be empty!'});
 					else
 					{
 						const dueDate = (req.body.dueDate !== undefined) ? moment(req.body.dueDate).toISOString() : null;
@@ -78,7 +78,7 @@ router.post('/projects/:projId/tasks', async (req, res) => {
 							.input('dueDate', sql.VarChar, dueDate)
 							.input('priority', sql.Int, priority)
 							.query('insert into tasks (taskName, projectId, dateOfAdding, dueDate, priority, completed) values (@taskName, @projId, @date, @dueDate, @priority, 0); SELECT SCOPE_IDENTITY() AS id');
-							res.json({error: null, task: {taskName: taskName, dateOfAdding: currentDate, dueDate: dueDate, priority: priority, taskId: result.recordset[0].id, completed: false}});
+							res.status(201).json({error: null, task: {taskName: taskName, dateOfAdding: currentDate, dueDate: dueDate, priority: priority, taskId: result.recordset[0].id, completed: false}});
 							pool.close();
 						} catch (err) {
 							pool.close();
@@ -98,30 +98,30 @@ router.put('/projects/:projId/tasks/:taskId', async (req, res) => {
 	try {
 		const login = req.session.user;
 		if (!updateTaskValidation(req.body))
-			res.json({"error": "Invalid request!", "errorDetails": updateTaskValidation.errors});
+			res.status(400).json({"error": "Invalid request!", "errorDetails": updateTaskValidation.errors});
 		else
 		{
 			const projId = Number(req.params.projId);
 			if (isNaN(projId))
-				res.json({error : 'Invalid project ID!'});
+				res.status(400).json({error : 'Invalid project ID!'});
 			else
 			{
 				const taskId = Number(req.params.taskId);
 				if (isNaN(taskId))
-					res.json({error : 'Invalid task ID!'});
+					res.status(400).json({error : 'Invalid task ID!'});
 				else
 				{
 					if (!(await db.isUserInTheProject(login, projId)))
-						res.json({error : 'You are not in this project!'});
+						res.status(403).json({error : 'You are not in this project!'});
 					else
 					{
 						if (!(await db.isTaskInTheProject(taskId, projId)))
-							res.json({error : 'This task not in the project!'});
+							res.status(404).json({error : 'This task not in the project!'});
 						else 
 						{
 							let taskName = req.body.taskName;
 							if (taskName === '')
-								res.json({error: 'Task name can not be empty!'});
+								res.status(400).json({error: 'Task name can not be empty!'});
 							else
 							{
 								const pool = new sql.ConnectionPool(db.config);
@@ -155,6 +155,36 @@ router.put('/projects/:projId/tasks/:taskId', async (req, res) => {
 			}
 		}
 	} catch (err) {
+		console.log(err);
+		res.status(500).json({error: "Iternal error!"});
+	}
+});
+
+router.delete('/projects/:projId/tasks/:taskId', async (req, res) => {
+	try {
+		const projId = Number(req.params.projId);
+		if (isNaN(projId))
+			res.status(400).json({error : 'Invalid project ID!'});
+		else
+		{
+			const taskId = Number(req.params.taskId);
+			if (isNaN(taskId))
+				res.status(400).json({error : 'Invalid task ID!'});
+			else
+			{
+				if (!(await db.isUserInTheProject(login, projId)))
+					res.json({error : 'You are not in this project!'});
+				else
+				{
+					if (!(await db.isTaskInTheProject(taskId, projId)))
+						res.json({error : 'This task not in the project!'});
+					else 
+					{
+					}
+				}
+			}
+		}
+	} catch (err){
 		console.log(err);
 		res.status(500).json({error: "Iternal error!"});
 	}
