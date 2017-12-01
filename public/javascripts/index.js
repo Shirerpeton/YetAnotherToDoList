@@ -70,12 +70,13 @@ let updatingTask = {
 }
 
 function addProject(project) {
+	const projNumber = $('#projectList').children().length;
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
-	delLink.click(deleteProj);
+	delLink.click(deleteProj(project.projectId, projNumber));
 	const renameLink = $('<a></a>').text('Rename');
 	renameLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
-	renameLink.click(renameProj(project.projectId));
+	renameLink.click(renameProj(project.projectId, projNumber));
 	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(renameLink);
@@ -86,14 +87,15 @@ function addProject(project) {
 	divDrop.attr('class', 'dropdown d-inline ');
 	divDrop.append(dropBtn, divDropMenu);
 	const projNameLink = $('<a></a>').text(project.projectName);
-	projNameLink.attr({'class': 'mylink pad-left d-inline', 'data-projId': project.projectId, 'href': '/projects/' + project.projectId + '/'});
+	projNameLink.attr({'class': 'mylink pad-left d-inline', 'href': '/projects/' + project.projectId + '/'});
 	$('#projectList').append($('<li></li>').append(divDrop, projNameLink));
 }
 
 function addUser(user) {
+	const userNumber = $('#userList').children().length;
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	delLink.click(deleteUser);
+	delLink.click(deleteUser(user.username, userNumber));
 	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(delLink);
@@ -108,12 +110,16 @@ function addUser(user) {
 }
 
 function addTask(task) {
+	const taskNumber = $('#taskList').children().length;
+	const completeLink = project.completed ? $('<a></a>').text('Uncomplete') : $('<a></a>').text('Complete');
+	completeLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
+	completeLink.click(completeTask(taskId, taskNumber));
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	delLink.click(deleteTask);
+	delLink.click(deleteTask(task.taskId, taskNumber));
 	const renameLink = $('<a></a>').text('Rename');
 	renameLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	renameLink.click(updateTask(task.taskId));
+	renameLink.click(updateTask(task.taskId, taskNumber));
 	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(renameLink);
@@ -124,7 +130,10 @@ function addTask(task) {
 	divDrop.attr('class', 'dropdown d-inline ');
 	divDrop.append(dropBtn, divDropMenu);
 	const taskName = $('<p></p>').text(task.taskName);
-	taskName.attr({'class': 'greyText smallmar d-inline', 'data-taskId': task.taskId});
+	if (task.completed)
+		taskName.attr({'class': 'smallmar d-inline completed'});
+	else
+		taskName.attr({'class': 'greyText smallmar d-inline'});
 	$('#taskList').append($('<li></li>').append(divDrop, taskName));
 }
 
@@ -178,66 +187,76 @@ function loadTasks() {
 	});
 }
 
-function deleteProj(event) {
-	event.preventDefault();
-	let number = $(this).parent().parent().parent().index();
-	let projId = $('#projectList').children().eq(number).children().eq(1).attr('data-projId');
-	$.ajax({
-        type: 'DELETE',
-        url: '/projects/' + projId,
-        success : function(response){
-			if (response.error === null)
-				$('#projectList').children().eq(number).remove();
-			const reg = new RegExp('\/projects\/' + projId + '\/');
-			if (reg.test(window.location))
-				window.location.replace('/');
-		}
-	});
-}
-
-function deleteUser(event) {
-	event.preventDefault();
-	let number = $(this).parent().parent().parent().index();
-	console.log($('#userList').children().eq(number).children().eq(1).text());
-	$.ajax({
-        type: 'DELETE',
-        url: 'users/' + $('#userList').children().eq(number).children().eq(1).text(),
-        success : function(response) {
-			console.log(response);
-			if (response.error === null)
-				$('#userList').children().eq(number).remove();
-			if (response.reload)
-				window.location.replace('/');
-		}
-	});
-}
-
-function updateTask(taskId) {
-	const taskNumber = $('#taskList').children().length;
-	return (event) => {
+function deleteProj(projId, projNumber) {
+	return event => {
 		event.preventDefault();
-		updatingTask.id = taskId;
-		updatingTask.number = taskNumber;
-		$('#addTask').slideToggle();
-		$('#updateTaskForm').slideToggle();
-		$('#newTaskName').focus();
+		$.ajax({
+			type: 'DELETE',
+			url: '/projects/' + projId,
+			success : function(response){
+				if (response.error === null)
+					$('#projectList').children().eq(projNumber).remove();
+				const reg = new RegExp('\/projects\/' + projId + '\/');
+				if (reg.test(window.location))
+					window.location.replace('/');
+			}
+		});
 	}
 }
 
-function deleteTask(event)
-{
-	event.preventDefault();
+function deleteUser(username, userNumber) {
+	return event => {
+		event.preventDefault();
+		$.ajax({
+			type: 'DELETE',
+			url: 'users/' + username,
+			success : function(response) {
+				if (response.error === null)
+					$('#userList').children().eq(userNumber).remove();
+				if (response.reload)
+					window.location.replace('/');
+			}
+		});
+	}
 }
 
-function renameProj(projId) {
-	const projNumber = $('#projectList').children().length;
+function deleteTask(taskId, taskNumber) {
+	return event => {
+		event.preventDefault();
+	}
+}
+
+function completeTask(taskId, taskNumber){
+	return event => {
+		event.preventDefault();
+	}
+}
+
+function renameProj(projId, projNumber) {
 	return (event) => {
 		event.preventDefault();
 		renamingProject.id = projId;
 		renamingProject.number = projNumber;
-		$('#addProj').slideToggle();
+		if ($('#addProjForm').is(":visible")) 
+			$('#addProjForm').slideToggle(); 
+		else
+			$('#addProj').slideToggle();
 		$('#renameProjForm').slideToggle();
 		$('#newProjName').focus();
+	}
+}
+
+function updateTask(taskId, taskNumber) {
+	return (event) => {
+		event.preventDefault();
+		updatingTask.id = taskId;
+		updatingTask.number = taskNumber;
+		if ($('#addTaskForm').is(':visible'))
+			$('#addTaskForm').slideToggle();
+		else
+			$('#addTask').slideToggle();
+		$('#updateTaskForm').slideToggle();
+		$('#newTaskName').focus();
 	}
 }
 
@@ -245,7 +264,7 @@ function submitRenameProjForm() {
 	const formData = { 'projectName': $('#newProjName').val() };
 	if (formData.projectName === '') {
 		$('#newProjName').attr('class', 'col-10 form-control');
-		$('#renameProjForm').hide();
+		$('#renameProjForm').slideToggle();
 		$('#addProj').slideToggle();
 	}
 	else {
@@ -258,7 +277,7 @@ function submitRenameProjForm() {
 				if (response.error === null) {
 					$('#projectList').children().eq(renamingProject.number).children().eq(1).text(response.project.projectName);
 					$('#newProjName').attr('class', 'col-10 form-control');
-					$('#renameProjForm').hide();
+					$('#renameProjForm').slideToggle();
 					$('#addProj').slideToggle();
 					$('#newProjName').val('');
 					projects[renamingProject.number] = response.project;
@@ -277,7 +296,7 @@ function submitUserForm() {
 	const formData = { 'username': $('#username').val() };
 	if (formData.username === '') {
 		$('#username').attr('class', 'col-10 form-control');
-		$('#addUserForm').hide();
+		$('#addUserForm').slideToggle();
 		$('#addUser').slideToggle();
 	}
 	else {
@@ -290,7 +309,7 @@ function submitUserForm() {
 				if (response.error === null) {
 					addUser(response.user);
 					$('#username').attr('class', 'col-10 form-control');
-					$('#addUserForm').hide();
+					$('#addUserForm').slideToggle();
 					$('#addUser').slideToggle();
 					$('#username').val('');
 					users.push(response.user);
@@ -309,7 +328,7 @@ function submitProjForm() {
 	const formData = { 'projectName': $('#projName').val() };
 	if (formData.projectName === '') {
 		$('#projName').attr('class', 'col-10 form-control');
-		$('#addProjForm').hide();
+		$('#addProjForm').slideToggle();
 		$('#addProj').slideToggle();
 	}
 	else {
@@ -323,7 +342,7 @@ function submitProjForm() {
 				{
 					addProject(response.project);
 					$('#projName').attr('class', 'col-10 form-control');
-					$('#addProjForm').hide();
+					$('#addProjForm').slideToggle();
 					$('#addProj').slideToggle();
 					$('#projName').val('');
 					projects.push(response.project);
@@ -342,7 +361,7 @@ function submitTaskForm() {
 	const formData = { 'taskName': $('#taskName').val()};
 	if (formData.taskName === '') {
 		$('#taskName').attr('class', 'col-10 form-control');
-		$('#addTaskForm').hide();
+		$('#addTaskForm').slideToggle();
 		$('#addTask').slideToggle();
 	}
 	else {
@@ -355,7 +374,7 @@ function submitTaskForm() {
 				if (response.error === null) {
 					addTask(response.task);
 					$('#taskName').attr('class', 'col-10 form-control');
-					$('#addTaskForm').hide();
+					$('#addTaskForm').slideToggle();
 					$('#addTask').slideToggle();
 					$('#taskName').val('');
 					tasks.push(response.task);
@@ -372,9 +391,9 @@ function submitTaskForm() {
 
 function submitUpdateTaskForm() {
 	const formData = {'taskName': $('#newTaskName').val()};
-	if (formData.newTaskName === '') {
+	if (formData.taskName === '') {
 		$('#newTaskName').attr('class', 'col-10 form-control');
-		$('#updateTaskForm').hide();
+		$('#updateTaskForm').slideToggle();
 		$('#addTask').slideToggle();
 	}
 	else {
@@ -387,7 +406,7 @@ function submitUpdateTaskForm() {
 				if (response.error === null) {
 					$('#taskList').children().eq(updatingTask.number).children().eq(1).text(response.task.taskName);
 					$('#newTaskName').attr('class', 'col-10 form-control');
-					$('#updateTaskForm').hide();
+					$('#updateTaskForm').slideToggle();
 					$('#addTask').slideToggle();
 					$('#newTaskName').val('');
 					tasks[updatingTask.number] = response.task;

@@ -10,6 +10,11 @@ body, html {
    height: 100%;
 }
 
+.completed{
+	color: rgba(211, 211, 211, 0.5);
+	text-decoration: line-through;
+}
+
 .center-form{
 	padding: 2rem;
 	position: absolute;
