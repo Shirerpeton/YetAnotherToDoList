@@ -111,9 +111,9 @@ function addUser(user) {
 
 function addTask(task) {
 	const taskNumber = $('#taskList').children().length;
-	const completeLink = project.completed ? $('<a></a>').text('Uncomplete') : $('<a></a>').text('Complete');
+	const completeLink = task.completed ? $('<a></a>').text('Uncomplete') : $('<a></a>').text('Complete');
 	completeLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
-	completeLink.click(completeTask(taskId, taskNumber));
+	completeLink.click(completeTask(task.taskId, taskNumber));
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
 	delLink.click(deleteTask(task.taskId, taskNumber));
@@ -122,6 +122,7 @@ function addTask(task) {
 	renameLink.click(updateTask(task.taskId, taskNumber));
 	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
+	divDropMenu.append(completeLink);
 	divDropMenu.append(renameLink);
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
@@ -229,6 +230,34 @@ function deleteTask(taskId, taskNumber) {
 function completeTask(taskId, taskNumber){
 	return event => {
 		event.preventDefault();
+		if (!tasks[taskNumber].completed) {
+			$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
+			$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
+		} else {
+				$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
+				$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
+		}
+		$.ajax({
+			type: 'PUT',
+			url: 'tasks/' + taskId,
+			data: JSON.stringify({'completed' : !tasks[taskNumber].completed}),
+			dataType: 'json',
+			contentType: "application/json",
+			success : function(response) {
+				if (response.error === null)
+					tasks[taskNumber] = response.task;
+				else {
+					console.log(response);
+					if (tasks[taskNumber].completed) {
+						$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
+						$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
+					} else {
+						$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
+						$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
+					}
+				}
+			}
+		});
 	}
 }
 
@@ -271,7 +300,7 @@ function submitRenameProjForm() {
 		$('#renameProjForm').off('submit', submitRenameProjForm);
 		$.ajax({
 			type: 'PUT',
-			url: '/projects/' + renamingProject.id + '/',
+			url: '/projects/' + renamingProject.id,
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
@@ -400,7 +429,7 @@ function submitUpdateTaskForm() {
 		$('#updateTaskForm').off('submit', submitUpdateTaskForm);
 		$.ajax({
 			type: 'PUT',
-			url: 'tasks/' + updatingTask.id + '/',
+			url: 'tasks/' + updatingTask.id,
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {

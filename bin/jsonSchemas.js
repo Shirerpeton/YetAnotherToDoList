@@ -120,7 +120,7 @@ schemas.updateTask = {
 			"maximum": 2
 		},
 		"completed": {
-			"type": "boolean",
+			"type": "boolean"
 		}
 	}
 };

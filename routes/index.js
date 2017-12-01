@@ -5,7 +5,7 @@ const router = require('./indexTasks.js');
 const sql = require('mssql');
 const db = require('../bin/db.js');
 
-router.get('/pinfo', (req, res) => {
+/* router.get('/pinfo', (req, res) => {
 	const pool = new sql.ConnectionPool(db.config);
 		pool.connect(err => {
 			if (err) throw err;
@@ -122,7 +122,7 @@ router.get('/tableinfo/:table/', async (req, res) => {
 		console.log(err);
 	}
 });
-
+ */
 /* router.get('/addTaskTable', async (req, res) => {
 	try {
 		const pool = new sql.ConnectionPool(db.config);
