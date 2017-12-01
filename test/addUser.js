@@ -72,7 +72,7 @@ describe('index page', () => {
 				.send({newUserUsername: 'testUsername'})
 				.end((err, res) => {
 					console.log(err);
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal("Invalid request!");
 					expect(db.isUserInTheProject.called).to.be.false;
 					expect(db.getUserByUsername.called).to.be.false;
@@ -89,7 +89,7 @@ describe('index page', () => {
 				.post('/projects/badId/users')
 				.send({username: 'testUsername'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal("Invalid project ID!");
 					expect(db.isUserInTheProject.called).to.be.false;
 					expect(db.getUserByUsername.called).to.be.false;
@@ -107,7 +107,7 @@ describe('index page', () => {
 				.post('/projects/0/users')
 				.send({username: 'testUsername'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(403);
 					expect(res.body.error).to.be.equal("You are not in this project!");
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(db.getUserByUsername.called).to.be.false;
@@ -126,7 +126,7 @@ describe('index page', () => {
 				.post('/projects/0/users')
 				.send({username: 'testUsername1'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal("Such user does not exist!");
 					expect(request.query.called).to.be.false;
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
@@ -146,7 +146,7 @@ describe('index page', () => {
 				.post('/projects/0/users')
 				.send({username: 'testUsername1'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal("That user already in this project!");
 					expect(request.query.called).to.be.false;
 					expect(db.isUserInTheProject.callCount).to.be.equal(2);

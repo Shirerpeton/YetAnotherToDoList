@@ -39,10 +39,10 @@ app.use(session({
 
 app.use('/sign-in', signIn);
 app.use('/sign-up', signUp);
-app.use('/logout', logout);
-app.use('/change-password', changePassword);
 app.use('/users', users);
 app.use('/', index);
+app.use('/change-password', changePassword);
+app.use('/logout', logout);
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

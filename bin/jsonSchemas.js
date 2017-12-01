@@ -35,6 +35,25 @@ schemas.signup = {
 	"required": ["username", "password", "repeatPassword"]
 };
 
+schemas.changePassword = {
+	"$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Password change",
+    "description": "Password change request schema",
+    "type": "object",
+	"properties": {
+		"password": {
+			"type": "string"
+		},
+		"newPassword": {
+			"type": "string"
+		},
+		"repeatNewPassword": {
+			"type": "string"
+		}
+	},
+	"required": ["password", "newPassword", "repeatNewPassword"]
+};
+
 schemas.addProject = {
 	"$schema": "http://json-schema.org/draft-06/schema#",
     "title": "Add project",

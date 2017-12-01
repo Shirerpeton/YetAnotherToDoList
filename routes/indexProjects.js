@@ -180,10 +180,8 @@ router.put('/projects/:projId/', async (req, res) => {
 					res.status(400).json({error: 'Project name must be no more than 50 characters long!'})
 				else
 				{
-					if (!(await db.isUserInTheProject(login, projId))) {
+					if (!(await db.isUserInTheProject(login, projId)))
 						res.status(403).json({error: "You are not in this project!"});
-						pool.close();
-					}
 					else {
 						const pool = new sql.ConnectionPool(db.config);
 						try {

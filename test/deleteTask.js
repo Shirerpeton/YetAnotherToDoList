@@ -39,8 +39,9 @@ describe('index page', () => {
 		beforeEach('logging', done => {
 			server = require('../bin/www');
 			sandbox.stub(sql, 'ConnectionPool').returns(pool);
-			sandbox.stub(db, 'getUserByUsername').withArgs('testUsername').returns({username: 'testUsername', passwordHash: 'testHash'});
 			sandbox.stub(db, 'isUserInTheProject');
+			sandbox.stub(db, 'isTaskInTheProject');
+			sandbox.stub(db, 'getUserByUsername').withArgs('testUsername').returns({username: 'testUsername', passwordHash: 'testHash'});
 			sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
 			agent = chai.request.agent(server);
 			agent
@@ -66,7 +67,7 @@ describe('index page', () => {
 			done();
 		});
 		describe('delete to "/projects/badId/tasks/0"', () => {
-			it('sens json with proper error', done => {
+			it('sends json with proper error', done => {
 				agent
 				.delete('/projects/badId/tasks/0')
 				.end((err, res) => {
@@ -81,7 +82,7 @@ describe('index page', () => {
 			});
 		});
 		describe('delete to "/projects/0/tasks/badId"', () => {
-			it('sens json with proper error', done => {
+			it('sends json with proper error', done => {
 				agent
 				.delete('/projects/0/tasks/badId')
 				.end((err, res) => {
@@ -91,6 +92,57 @@ describe('index page', () => {
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
 					expect(pool.close.called).to.be.false;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/tasks/0" without access to the project', () => {
+			it('sends json with proper error', done => {
+				db.isUserInTheProject.withArgs('testUsername', 0).returns(false);
+				agent
+				.delete('/projects/0/tasks/0')
+				.end((err, res) => {
+					expect(err).to.have.status(403);
+					expect(res.body.error).to.be.equal('You are not in this project!');
+					expect(db.isUserInTheProject.calledOnce).to.be.true;
+					expect(request.query.called).to.be.false;
+					expect(pool.connect.called).to.be.false;
+					expect(pool.close.called).to.be.false;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/tasks/0" with task that not in the project', () => {
+			it('sends json with proper error', done => {
+				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
+				db.isTaskInTheProject.withArgs(0, 0).returns(false);
+				agent
+				.delete('/projects/0/tasks/0')
+				.end((err, res) => {
+					expect(err).to.have.status(400);
+					expect(res.body.error).to.be.equal('This task not in the project!');
+					expect(db.isUserInTheProject.calledOnce).to.be.true;
+					expect(request.query.called).to.be.false;
+					expect(pool.connect.called).to.be.false;
+					expect(pool.close.called).to.be.false;
+					done();
+				});
+			});
+		});
+		describe('delete to "/projects/0/tasks/0" with proper data', () => {
+			it('deletes task and sends json without errors', done => {
+				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
+				db.isTaskInTheProject.withArgs(0, 0).returns(true);
+				agent
+				.delete('/projects/0/tasks/0')
+				.end((err, res) => {
+					expect(err).to.be.null;
+					expect(res.body.error).to.be.null;
+					expect(db.isUserInTheProject.calledOnce).to.be.true;
+					expect(db.isTaskInTheProject.calledOnce).to.be.true;
+					expect(request.query.calledOnce).to.be.true;
+					expect(pool.connect.calledOnce).to.be.true;
+					expect(pool.close.calledOnce).to.be.true;
 					done();
 				});
 			});

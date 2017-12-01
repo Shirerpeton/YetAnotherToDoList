@@ -70,13 +70,13 @@ let updatingTask = {
 }
 
 function addProject(project) {
-	const projNumber = $('#projectList').children().length;
+	//const projNumber = $('#projectList').children().length;
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
-	delLink.click(deleteProj(project.projectId, projNumber));
+	delLink.click(deleteProj(project.projectId));
 	const renameLink = $('<a></a>').text('Rename');
 	renameLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
-	renameLink.click(renameProj(project.projectId, projNumber));
+	renameLink.click(renameProj(project.projectId));
 	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(renameLink);
@@ -188,15 +188,22 @@ function loadTasks() {
 	});
 }
 
-function deleteProj(projId, projNumber) {
-	return event => {
+function deleteProj(projId) {
+	return function(event) {
+		let that = $(this);
 		event.preventDefault();
 		$.ajax({
 			type: 'DELETE',
 			url: '/projects/' + projId,
 			success : function(response){
 				if (response.error === null)
+				{
+					const projNumber = that.parent().parent().parent().index();
 					$('#projectList').children().eq(projNumber).remove();
+					projects.splice(projNumber, 1);
+				}
+				else
+					console.log(response.error);
 				const reg = new RegExp('\/projects\/' + projId + '\/');
 				if (reg.test(window.location))
 					window.location.replace('/');
@@ -216,6 +223,7 @@ function deleteUser(username, userNumber) {
 					$('#userList').children().eq(userNumber).remove();
 				if (response.reload)
 					window.location.replace('/');
+				users.splice(userNumber, 1);
 			}
 		});
 	}
@@ -261,9 +269,11 @@ function completeTask(taskId, taskNumber){
 	}
 }
 
-function renameProj(projId, projNumber) {
-	return (event) => {
+function renameProj(projId) {
+	return function(event) {
 		event.preventDefault();
+		const projNumber = $(this).parent().parent().parent().index();			
+		console.log($(this));
 		renamingProject.id = projId;
 		renamingProject.number = projNumber;
 		if ($('#addProjForm').is(":visible")) 
@@ -305,11 +315,11 @@ function submitRenameProjForm() {
 			success : function(response) {
 				if (response.error === null) {
 					$('#projectList').children().eq(renamingProject.number).children().eq(1).text(response.project.projectName);
+					projects[renamingProject.number] = response.project;
 					$('#newProjName').attr('class', 'col-10 form-control');
 					$('#renameProjForm').slideToggle();
 					$('#addProj').slideToggle();
 					$('#newProjName').val('');
-					projects[renamingProject.number] = response.project;
 				}
 				else {
 					$('#newProjName').attr('class', 'col-10 form-control is-invalid');
@@ -337,11 +347,11 @@ function submitUserForm() {
 			success : function(response) {
 				if (response.error === null) {
 					addUser(response.user);
+					users.push(response.user);
 					$('#username').attr('class', 'col-10 form-control');
 					$('#addUserForm').slideToggle();
 					$('#addUser').slideToggle();
 					$('#username').val('');
-					users.push(response.user);
 				}
 				else {
 					$('#username').attr('class', 'col-10 form-control is-invalid');
@@ -370,11 +380,11 @@ function submitProjForm() {
 				if (response.error === null)
 				{
 					addProject(response.project);
+					projects.push(response.project);
 					$('#projName').attr('class', 'col-10 form-control');
 					$('#addProjForm').slideToggle();
 					$('#addProj').slideToggle();
 					$('#projName').val('');
-					projects.push(response.project);
 				}
 				else {
 					$('#projName').attr('class', 'col-10 form-control is-invalid');
@@ -402,11 +412,11 @@ function submitTaskForm() {
 			success : function(response) {
 				if (response.error === null) {
 					addTask(response.task);
+					tasks.push(response.task);
 					$('#taskName').attr('class', 'col-10 form-control');
 					$('#addTaskForm').slideToggle();
 					$('#addTask').slideToggle();
 					$('#taskName').val('');
-					tasks.push(response.task);
 				}
 				else {
 					$('#taskName').attr('class', 'col-10 form-control is-invalid');
@@ -434,11 +444,11 @@ function submitUpdateTaskForm() {
 			success : function(response) {
 				if (response.error === null) {
 					$('#taskList').children().eq(updatingTask.number).children().eq(1).text(response.task.taskName);
+					tasks[updatingTask.number] = response.task;
 					$('#newTaskName').attr('class', 'col-10 form-control');
 					$('#updateTaskForm').slideToggle();
 					$('#addTask').slideToggle();
 					$('#newTaskName').val('');
-					tasks[updatingTask.number] = response.task;
 				}
 				else {
 					$('#newTaskName').attr('class', 'col-10 form-control is-invalid');

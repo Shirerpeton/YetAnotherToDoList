@@ -243,7 +243,7 @@ describe('index page', () => {
 				agent
 				.get('/projects/0/users')
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(403);
 					expect(res.body.error).to.be.equal("You are not in that project!");
 					done();
 				});

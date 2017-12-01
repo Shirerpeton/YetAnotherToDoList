@@ -54,9 +54,10 @@ describe('/change-password', () => {
 		describe('get to "/change-password"', () => {
 			it('redirects to index page', done => {
 				chai.request(server)
-				.get('/change-password').redirects(0)
-				.catch(err => {
-					expect(err.response).to.have.status(302).and.header('Location', '/');
+				.get('/change-password')
+				.end((err, res) => {
+					expect(err).to.have.status(401);
+					expect(res.body.error).to.be.equal('You are not logged!');
 					done();
 				});
 			});
@@ -67,7 +68,7 @@ describe('/change-password', () => {
 				.post('/change-password')
 				.send({password: 'testPassword', newPassword: 'newTestpassword', repNewPassword: 'repNewTestPassword'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(401);
 					expect(res.body.error).to.be.equal("You are not logged!");
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -115,13 +116,29 @@ describe('/change-password', () => {
 				});
 			});
 		});
+		describe('post to "/change-password" with invalid request', () => {
+			it('sends json with proper error', done => {
+				agent
+				.post('/change-password')
+				.send({oldPassword: 'testPassword', newPassword: 'Pass', repeatNewPassword: 'Pass'})
+				.end((err, res) => {
+					expect(err).to.have.status(400);
+					expect(res.body.error).to.be.equal("Invalid request!");
+					expect(request.query.called).to.be.false;
+					expect(pool.connect.called).to.be.false;
+					expect(pool.close.called).to.be.false;
+					expect(db.getUserByUsername.called).to.be.false;
+					done();
+				});
+			});
+		});
 		describe('post to "/change-password" with too short password', () => {
 			it('sends json with proper error', done => {
 				agent
 				.post('/change-password')
-				.send({password: 'testPassword', newPassword: 'Pass', repNewPassword: 'Pass'})
+				.send({password: 'testPassword', newPassword: 'Pass', repeatNewPassword: 'Pass'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal("Password must be at least 6 characters long!");
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -135,9 +152,9 @@ describe('/change-password', () => {
 			it('sends json with proper error', done => {
 				agent
 				.post('/change-password')
-				.send({password: 'testPassword', newPassword: 'definetlyTooLongThanMaximum20CharactersPassword', repNewPassword: 'definetlyTooLongThanMaximum20CharactersPassword'})
+				.send({password: 'testPassword', newPassword: 'definetlyTooLongThanMaximum20CharactersPassword', repeatNewPassword: 'definetlyTooLongThanMaximum20CharactersPassword'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal("Password must be no more than 20 characters long!");
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -151,9 +168,9 @@ describe('/change-password', () => {
 			it('sends json with proper error', done => {
 				agent
 				.post('/change-password')
-				.send({password: 'testPassword', newPassword: 'testPassword', repNewPassword: 'anotherPassword'})
+				.send({password: 'testPassword', newPassword: 'testPassword', repeatNewPassword: 'anotherPassword'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal("Passwords must match!");
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -169,9 +186,9 @@ describe('/change-password', () => {
 				bcrypt.promiseCompare.withArgs('wrongPassword', 'testHash').returns(false);
 				agent
 				.post('/change-password')
-				.send({password: 'wrongPassword', newPassword: 'newPassword', repNewPassword: 'newPassword'})
+				.send({password: 'wrongPassword', newPassword: 'newPassword', repeatNewPassword: 'newPassword'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal("Invalid password!");
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -187,7 +204,7 @@ describe('/change-password', () => {
 				bcrypt.promiseCompare.withArgs('testPassword', 'testHash').returns(true);
 				agent
 				.post('/change-password')
-				.send({password: 'testPassword', newPassword: 'newPassword', repNewPassword: 'newPassword'})
+				.send({password: 'testPassword', newPassword: 'newPassword', repeatNewPassword: 'newPassword'})
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
@@ -200,13 +217,13 @@ describe('/change-password', () => {
 			});
 		});
 		describe('post to "/change-password" with error in getUserByUsername', () => {
-			it('seds json with proper error', done => {
+			it('sends json with proper error', done => {
 				db.getUserByUsername.withArgs('testUsername').throws('Database error!');
 				agent
 				.post('/change-password')
-				.send({password: 'testPassword', newPassword: 'newPassword', repNewPassword: 'newPassword'})
+				.send({password: 'testPassword', newPassword: 'newPassword', repeatNewPassword: 'newPassword'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(500);
 					expect(res.body.error).to.be.equal('Iternal error!');
 					expect(request.query.called).to.be.false;
 					expect(pool.connect.called).to.be.false;
@@ -223,9 +240,9 @@ describe('/change-password', () => {
 				request.query.throws('Database error!');
 				agent
 				.post('/change-password')
-				.send({password: 'testPassword', newPassword: 'newPassword', repNewPassword: 'newPassword'})
+				.send({password: 'testPassword', newPassword: 'newPassword', repeatNewPassword: 'newPassword'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(500);
 					expect(res.body.error).to.be.equal('Iternal error!');
 					expect(request.query.calledOnce).to.be.true;
 					expect(pool.connect.calledOnce).to.be.true;

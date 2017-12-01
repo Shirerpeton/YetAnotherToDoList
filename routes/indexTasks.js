@@ -162,6 +162,7 @@ router.put('/projects/:projId/tasks/:taskId', async (req, res) => {
 
 router.delete('/projects/:projId/tasks/:taskId', async (req, res) => {
 	try {
+		const login = req.session.user;
 		const projId = Number(req.params.projId);
 		if (isNaN(projId))
 			res.status(400).json({error : 'Invalid project ID!'});
@@ -173,13 +174,25 @@ router.delete('/projects/:projId/tasks/:taskId', async (req, res) => {
 			else
 			{
 				if (!(await db.isUserInTheProject(login, projId)))
-					res.json({error : 'You are not in this project!'});
+					res.status(403).json({error : 'You are not in this project!'});
 				else
 				{
 					if (!(await db.isTaskInTheProject(taskId, projId)))
-						res.json({error : 'This task not in the project!'});
+						res.status(400).json({error : 'This task not in the project!'});
 					else 
 					{
+						const pool = new sql.ConnectionPool(db.config);
+						try {
+							await pool.connect();
+							await pool.request()
+							.input('taskId', sql.Int, taskId)
+							.query('delete from tasks where (taskId = @taskId)');
+							res.json({error: null});
+							pool.close();
+						} catch (err) {
+							pool.close();
+							throw err;
+						}
 					}
 				}
 			}

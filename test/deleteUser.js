@@ -70,7 +70,7 @@ describe('index page', () => {
 				agent
 				.delete('/projects/badId/users/testUsername')
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid project ID!');
 					expect(db.isUserInTheProject.called).to.be.false;
 					expect(request.query.called).to.be.false;
@@ -81,12 +81,12 @@ describe('index page', () => {
 			});
 		});
 		describe('delete to "/projects/0/users/testUsername" without access to the project', () => {
-			it('sens json with proper error', done => {
+			it('sends json with proper error', done => {
 				db.isUserInTheProject.withArgs('testUsername', 0).returns(false);
 				agent
 				.delete('/projects/0/users/testUsername')
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(403);
 					expect(res.body.error).to.be.equal('You are not in this project!');
 					expect(db.isUserInTheProject.calledOnce).to.be.true;
 					expect(request.query.called).to.be.false;
@@ -97,13 +97,13 @@ describe('index page', () => {
 			});
 		});
 		describe('delete to "/projects/0/users/testUsername" when user whith name username not in the project', () => {
-			it('sens json with proper error', done => {
+			it('sends json with proper error', done => {
 				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
 				db.isUserInTheProject.withArgs('testUsername1', 0).returns(false);
 				agent
 				.delete('/projects/0/users/testUsername1')
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('That user not in this project!');
 					expect(db.isUserInTheProject.callCount).to.be.equal(2);
 					expect(request.query.called).to.be.false;
@@ -114,7 +114,7 @@ describe('index page', () => {
 			});
 		});
 		describe('delete to "/projects/0/users/testUsername" with error in the database', () => {
-			it('sens json with proper error', done => {
+			it('sends json with proper error', done => {
 				db.isUserInTheProject.withArgs('testUsername', 0).throws('Database error!');
 				agent
 				.delete('/projects/0/users/testUsername1')

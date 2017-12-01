@@ -23,7 +23,7 @@ router.get('/projects/:projId/users', async (req, res) => {
 			else
 				isUserPresentInProj = true;
 		if (!isUserPresentInProj)
-			res.json({error: "You are not in that project!"});
+			res.status(403).json({error: "You are not in that project!"});
 		else
 			res.json({error: null, users: projUsers});
 	} catch (err) {
@@ -36,25 +36,25 @@ router.post('/projects/:projId/users', async (req, res) => {
 	try {
 		const login = req.session.user;
 		if (!addUserValidation(req.body))
-			res.json({error: "Invalid request!", errorDetails: addUserValidation.errors});
+			res.status(400).json({error: "Invalid request!", errorDetails: addUserValidation.errors});
 		else
 		{
 			const projId = Number(req.params.projId);
 			if (isNaN(projId))
-				res.json({error: "Invalid project ID!"});
+				res.status(400).json({error: "Invalid project ID!"});
 			else
 			{
 				const username = req.body.username;
 				if (!(await db.isUserInTheProject(login, projId)))
-					res.json({error: "You are not in this project!"});
+					res.status(403).json({error: "You are not in this project!"});
 				else
 				{
 					if ((await db.getUserByUsername(username)) === null)
-						res.json({error: "Such user does not exist!"});
+						res.status(400).json({error: "Such user does not exist!"});
 					else
 					{
 						if (await db.isUserInTheProject(username, projId))
-							res.json({error: "That user already in this project!"});
+							res.status(400).json({error: "That user already in this project!"});
 						else
 						{
 							const pool = new sql.ConnectionPool(db.config);
@@ -64,7 +64,7 @@ router.post('/projects/:projId/users', async (req, res) => {
 								.input('username', sql.VarChar(20), username)
 								.input('projId', sql.Int, projId)
 								.query('insert into usersProjects (username, projectId) values (@username, @projId)');
-								res.json({error: null, user: {username: username}});
+								res.status(201).json({error: null, user: {username: username}});
 								pool.close();
 							} catch (err) {
 								pool.close();
@@ -86,16 +86,16 @@ router.delete('/projects/:projId/users/:username', async (req, res) => {
 		const login = req.session.user;
 		const projId = Number(req.params.projId);
 		if (isNaN(projId))
-			res.json({error : 'Invalid project ID!'});
+			res.status(400).json({error : 'Invalid project ID!'});
 		else
 		{
 			const username = req.params.username;
 			if (!(await db.isUserInTheProject(login, projId)))
-				res.json({error: "You are not in this project!"});
+				res.status(403).json({error: "You are not in this project!"});
 			else 
 			{
 				if (!(await db.isUserInTheProject(username, projId)))
-					res.json({error: "That user not in this project!"});
+					res.status(400).json({error: "That user not in this project!"});
 				else
 				{
 					const pool = new sql.ConnectionPool(db.config);

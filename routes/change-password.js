@@ -1,49 +1,41 @@
-const express = require('express');
-const router = express.Router();
-const bcrypt = require('../bin/bcryptPromise.js');
-const sql = require('mssql');
-const db = require('../bin/db.js');
+const express = require('express')
+	, router = express.Router()
+	, bcrypt = require('../bin/bcryptPromise.js')
+	, sql = require('mssql')
+	, db = require('../bin/db.js')
+	, Ajv = require('ajv')
+	, ajv = new Ajv()
+	, schemas = require('../bin/jsonSchemas.js');
 
+const changePasswordValidation = ajv.compile(schemas.changePassword);
+	
 router.get('/', function(req, res, next) {
 	const login = req.session.user;
-	if (login)
-		res.render('change-password', { title: 'Change passoword', profile: login });
-	else
-		res.redirect('/');
+	res.render('change-password', { title: 'Change passoword', profile: login });
 });
-
-function promiseBycryptCompare(text, hash)
-{
-	return new Promise((resolve, reject) => {
-		bcrypt.compare(text, hash, (err, result) => {
-			if (err) reject(err);
-			else resolve(result);
-		});
-	});
-}
 
 router.post('/', async (req, res, next) => {
 	try {
 		const login = req.session.user;
-		if (login === undefined)
-			res.json({error: "You are not logged!"});
+		if (!changePasswordValidation(req.body))
+			res.status(400).json({"error": "Invalid request!", "errorDetails": changePasswordValidation.errors});
 		else
 		{
 			const password = req.body.password;
 			const newPassword = req.body.newPassword;
-			const repNewPassword = req.body.repNewPassword;
+			const repNewPassword = req.body.repeatNewPassword;
 			if (newPassword.length < 6)
-				res.json({error: "Password must be at least 6 characters long!"});
+				res.status(400).json({error: "Password must be at least 6 characters long!"});
 			else if (newPassword.length > 20)
-				res.json({error: "Password must be no more than 20 characters long!"});
+				res.status(400).json({error: "Password must be no more than 20 characters long!"});
 			else if (newPassword !== repNewPassword)
-				res.json({error: 'Passwords must match!'});
+				res.status(400).json({error: 'Passwords must match!'});
 			else
 			{
 				const result = await db.getUserByUsername(login);
 				const resultOfComp = await bcrypt.promiseCompare(password, result.passwordHash);
 				if (!resultOfComp)
-					res.json({error: 'Invalid password!'});
+					res.status(400).json({error: 'Invalid password!'});
 				else
 				{
 					const hash = await bcrypt.promiseHash(newPassword);
@@ -65,7 +57,7 @@ router.post('/', async (req, res, next) => {
 		}
 	} catch (err) {
 		console.log(err);
-		res.json({error: 'Iternal error!'});
+		res.status(500).json({error: 'Iternal error!'});
 	}
 });
 
