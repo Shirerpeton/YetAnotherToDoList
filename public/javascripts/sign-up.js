@@ -40,7 +40,7 @@ function submitForm()
 	} else
 		$.ajax({
 			type: 'POST',
-			url: '/users/sign-up',
+			url: '/sign-up',
 			data: formData,
 			success : (response) => {
 				if (response.error === 'That username is already taken!')

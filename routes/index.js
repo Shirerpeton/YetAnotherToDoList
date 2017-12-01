@@ -123,6 +123,24 @@ router.get('/tableinfo/:table/', async (req, res) => {
 	}
 });
  */
+ 
+/*  router.get('/creats', async (req, res) => {
+	try {
+		const pool = new sql.ConnectionPool(db.config);
+		try {
+			await pool.connect();
+			const result = await pool.request()
+			.query('CREATE TABLE dbo.sessions(sid varchar(255) NOT NULL PRIMARY KEY, session varchar(max) NOT NULL, expires datetime NOT NULL)');
+			pool.close();
+			console.log(result);
+		} catch (err) {
+			pool.close();
+			throw err;
+		}
+	} catch (err) {
+		console.log(err);
+	}
+}); */
 /* router.get('/addTaskTable', async (req, res) => {
 	try {
 		const pool = new sql.ConnectionPool(db.config);

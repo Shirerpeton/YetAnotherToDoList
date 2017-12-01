@@ -9,7 +9,7 @@ function submitForm()
 	var formData = { "username": $('#username').val(), "password": $('#password').val() };
 	$.ajax({
         type: 'POST',
-        url: '/users/sign-in',
+        url: '/sign-in',
         data: formData,
         success : function(response){
             if (response.error === 'That user do not exist!')

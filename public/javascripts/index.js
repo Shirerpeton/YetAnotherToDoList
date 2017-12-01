@@ -234,8 +234,8 @@ function completeTask(taskId, taskNumber){
 			$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
 			$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
 		} else {
-				$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
-				$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
+			$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
+			$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
 		}
 		$.ajax({
 			type: 'PUT',

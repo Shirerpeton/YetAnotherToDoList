@@ -33,11 +33,11 @@ html
 						li(class='nav-item')
 							div(class='btn-group', role='group', aria-label='SignIn&SignUp')
 								if (signIn)
-									a(type='button', class='btn btn-secondary btn-dark text-white active', href='/users/sign-in', aria-pressed='true') Sign In
+									a(type='button', class='btn btn-secondary btn-dark text-white active', href='/sign-in', aria-pressed='true') Sign In
 								else
-									a(type='button', class='btn btn-secondary btn-dark text-white', href='/users/sign-in') Sign In
+									a(type='button', class='btn btn-secondary btn-dark text-white', href='/sign-in') Sign In
 								if (signUp)
-									a(type='button', class='btn btn-secondary btn-dark text-white active', href='/users/sign-up', aria-pressed='true') Sign Up
+									a(type='button', class='btn btn-secondary btn-dark text-white active', href='/sign-up', aria-pressed='true') Sign Up
 								else
-									a(type='button', class='btn btn-secondary btn-dark text-white', href='/users/sign-up') Sign Up
+									a(type='button', class='btn btn-secondary btn-dark text-white', href='/sign-up') Sign Up
 		block content

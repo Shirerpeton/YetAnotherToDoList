@@ -1,17 +1,18 @@
-const express = require('express');
-const path = require('path');
-const favicon = require('serve-favicon');
-const logger = require('morgan');
-const cookieParser = require('cookie-parser');
-const bodyParser = require('body-parser');
-const db = require('./bin/db.js');
-const session = require('express-session');
-const index = require('./routes/index');
-const logout = require('./routes/logout');
-const users = require('./routes/users');
-const changePassword = require('./routes/change-password');
-const signIn = require('./routes/signin');
-const signUp = require('./routes/signup');
+const express = require('express')
+	, path = require('path')
+	, favicon = require('serve-favicon')
+	, logger = require('morgan')
+	, cookieParser = require('cookie-parser')
+	, bodyParser = require('body-parser')
+	, db = require('./bin/db.js')
+	, session = require('express-session')
+	, MSSQLStore = require('connect-mssql')(session)
+	, index = require('./routes/index')
+	, logout = require('./routes/logout')
+	, users = require('./routes/users')
+	, changePassword = require('./routes/change-password')
+	, signIn = require('./routes/signin')
+	, signUp = require('./routes/signup');
 
 const app = express();
 
@@ -29,14 +30,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('trust proxy', 1);
 
 app.use(session({
+	store: new MSSQLStore(db.config),
     secret: 'someSecret',
     resave: true,
     saveUninitialized: true,
 	//cookie: { secure: true }
 }));
 
-app.use('/users/sign-in', signIn);
-app.use('/users/sign-up', signUp);
+app.use('/sign-in', signIn);
+app.use('/sign-up', signUp);
+app.use('/logout', logout);
 app.use('/change-password', changePassword);
 app.use('/users', users);
 app.use('/', index);
