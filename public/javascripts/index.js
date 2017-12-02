@@ -61,16 +61,17 @@ let users = [], projects = [], tasks = [];
 
 let renamingProject = {
 	id: null,
-	number: null
+	element: null,
+	request: false
 };
 
 let updatingTask = {
 	id: null,
-	number: null
+	element: null,
+	request: false
 }
 
 function addProject(project) {
-	//const projNumber = $('#projectList').children().length;
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
 	delLink.click(deleteProj(project.projectId));
@@ -92,10 +93,9 @@ function addProject(project) {
 }
 
 function addUser(user) {
-	const userNumber = $('#userList').children().length;
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	delLink.click(deleteUser(user.username, userNumber));
+	delLink.click(deleteUser(user.username));
 	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(delLink);
@@ -110,16 +110,15 @@ function addUser(user) {
 }
 
 function addTask(task) {
-	const taskNumber = $('#taskList').children().length;
 	const completeLink = task.completed ? $('<a></a>').text('Uncomplete') : $('<a></a>').text('Complete');
 	completeLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
-	completeLink.click(completeTask(task.taskId, taskNumber));
+	completeLink.click(completeTask(task.taskId));
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	delLink.click(deleteTask(task.taskId, taskNumber));
+	delLink.click(deleteTask(task.taskId));
 	const renameLink = $('<a></a>').text('Rename');
 	renameLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	renameLink.click(updateTask(task.taskId, taskNumber));
+	renameLink.click(updateTask(task.taskId));
 	const divDropMenu = $('<div></div>');
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(completeLink);
@@ -212,32 +211,40 @@ function deleteProj(projId) {
 	}
 }
 
-function deleteUser(username, userNumber) {
-	return event => {
+function deleteUser(username) {
+	return function(event) {
+		let that = $(this);
 		event.preventDefault();
 		$.ajax({
 			type: 'DELETE',
 			url: 'users/' + username,
 			success : function(response) {
-				if (response.error === null)
+				if (response.error === null) {
+					const userNumber = that.parent().parent().parent().index();
 					$('#userList').children().eq(userNumber).remove();
+					users.splice(userNumber, 1);
+				}
+				else
+					console.log(reponse.error)
 				if (response.reload)
 					window.location.replace('/');
-				users.splice(userNumber, 1);
 			}
 		});
 	}
 }
 
-function deleteTask(taskId, taskNumber) {
-	return event => {
+function deleteTask(taskId) {
+	return function(event) {
+		let that = $(this);
 		event.preventDefault();
 	}
 }
 
-function completeTask(taskId, taskNumber){
-	return event => {
+function completeTask(taskId){
+	return function(event) {
+		let that = $(this);
 		event.preventDefault();
+		const taskNumber = that.parent().parent().parent().index();
 		if (!tasks[taskNumber].completed) {
 			$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
 			$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
@@ -255,7 +262,8 @@ function completeTask(taskId, taskNumber){
 				if (response.error === null)
 					tasks[taskNumber] = response.task;
 				else {
-					console.log(response);
+					console.log(error);
+					taskNumber = that.parent().parent().parent().index();
 					if (tasks[taskNumber].completed) {
 						$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
 						$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
@@ -272,30 +280,32 @@ function completeTask(taskId, taskNumber){
 function renameProj(projId) {
 	return function(event) {
 		event.preventDefault();
-		const projNumber = $(this).parent().parent().parent().index();			
-		console.log($(this));
-		renamingProject.id = projId;
-		renamingProject.number = projNumber;
-		if ($('#addProjForm').is(":visible")) 
-			$('#addProjForm').slideToggle(); 
-		else
-			$('#addProj').slideToggle();
-		$('#renameProjForm').slideToggle();
-		$('#newProjName').focus();
+		if (!renamingProject.request) {
+			renamingProject.id = projId;
+			renamingProject.element = $(this);
+			if ($('#addProjForm').is(":visible")) 
+				$('#addProjForm').slideToggle(); 
+			else
+				$('#addProj').slideToggle();
+			$('#renameProjForm').slideToggle();
+			$('#newProjName').focus();
+		}
 	}
 }
 
-function updateTask(taskId, taskNumber) {
-	return (event) => {
+function updateTask(taskId) {
+	return function(event) {
 		event.preventDefault();
-		updatingTask.id = taskId;
-		updatingTask.number = taskNumber;
-		if ($('#addTaskForm').is(':visible'))
-			$('#addTaskForm').slideToggle();
-		else
-			$('#addTask').slideToggle();
-		$('#updateTaskForm').slideToggle();
-		$('#newTaskName').focus();
+		if (!updatingTask.request) {
+			updatingTask.id = taskId;
+			updatingTask.element = $(this);
+			if ($('#addTaskForm').is(':visible'))
+				$('#addTaskForm').slideToggle();
+			else
+				$('#addTask').slideToggle();
+			$('#updateTaskForm').slideToggle();
+			$('#newTaskName').focus();
+		}
 	}
 }
 
@@ -308,14 +318,16 @@ function submitRenameProjForm() {
 	}
 	else {
 		$('#renameProjForm').off('submit', submitRenameProjForm);
+		renamingProject.request = true;
 		$.ajax({
 			type: 'PUT',
 			url: '/projects/' + renamingProject.id,
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
-					$('#projectList').children().eq(renamingProject.number).children().eq(1).text(response.project.projectName);
-					projects[renamingProject.number] = response.project;
+					const projectNumber = renamingProject.element.parent().parent().parent().index();
+					$('#projectList').children().eq(projectNumber).children().eq(1).text(response.project.projectName);
+					projects[projectNumber] = response.project;
 					$('#newProjName').attr('class', 'col-10 form-control');
 					$('#renameProjForm').slideToggle();
 					$('#addProj').slideToggle();
@@ -326,6 +338,7 @@ function submitRenameProjForm() {
 					$('#invNewProjName').text(response.error);
 				}
 				$('#renameProjForm').submit(submitRenameProjForm);
+				renamingProject.request = false;
 			}
 		});
 	}
@@ -437,14 +450,16 @@ function submitUpdateTaskForm() {
 	}
 	else {
 		$('#updateTaskForm').off('submit', submitUpdateTaskForm);
+		updatingTask.request = true;
 		$.ajax({
 			type: 'PUT',
 			url: 'tasks/' + updatingTask.id,
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
-					$('#taskList').children().eq(updatingTask.number).children().eq(1).text(response.task.taskName);
-					tasks[updatingTask.number] = response.task;
+					const taskNumber = updatingTask.element.parent().parent().parent().index();
+					$('#taskList').children().eq(taskNumber).children().eq(1).text(response.task.taskName);
+					tasks[taskNumber] = response.task;
 					$('#newTaskName').attr('class', 'col-10 form-control');
 					$('#updateTaskForm').slideToggle();
 					$('#addTask').slideToggle();
@@ -455,6 +470,7 @@ function submitUpdateTaskForm() {
 					$('#invUpdateTask').text(response.error);
 				}
 				$('#updateTaskForm').submit(submitTaskForm);
+				updatingTask.request = false;
 			}
 		});
 	}
