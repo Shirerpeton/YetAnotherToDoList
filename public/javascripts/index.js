@@ -9,6 +9,8 @@ $('#updateTaskForm').hide();
 $('#addUser').hide();
 $('#addTask').hide();
 
+$('#viewSettings').hide();
+
 $("#addProj").click(function(){
 	$('#addProj').slideToggle();
 	$('#addProjForm').slideToggle();
@@ -71,6 +73,33 @@ let updatingTask = {
 	request: false
 }
 
+let showCompleted = (Cookies.get('showCompleted') === 'true');
+if (showCompleted)
+	$("#showCompleted").attr('class', 'fa fa-check-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+else
+	$("#showCompleted").attr('class', 'fa fa-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+
+$("#showCompleted").click(() => {
+	$.ajax({
+		type: 'GET',
+        url: '/toggle-completed',
+        success : function(response) {
+			if (response.error === null) {
+				showCompleted = !showCompleted;
+				if (showCompleted)
+					$("#showCompleted").attr('class', 'fa fa-check-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+				else
+					$("#showCompleted").attr('class', 'fa fa-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+				if (showCompleted)
+					$('.completed').parent().show();
+				else
+					$('.completed').parent().hide();
+			} else
+				console.log(response.error);
+		}
+	});
+});
+
 function addProject(project) {
 	const delLink = $('<a></a>').text('Delete');
 	delLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
@@ -83,7 +112,7 @@ function addProject(project) {
 	divDropMenu.append(renameLink);
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
-	dropBtn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	dropBtn.attr({ 'class': 'btn my-btn-dark settings-buttons fa fa-bars fa-inverse', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
 	const divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline ');
 	divDrop.append(dropBtn, divDropMenu);
@@ -100,7 +129,7 @@ function addUser(user) {
 	divDropMenu.attr('class', 'dropdown-menu greyBg');
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
-	dropBtn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	dropBtn.attr({ 'class': 'btn my-btn-dark settings-buttons fa fa-bars fa-inverse', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
 	const divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline');
 	divDrop.append(dropBtn, divDropMenu);
@@ -125,7 +154,7 @@ function addTask(task) {
 	divDropMenu.append(renameLink);
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
-	dropBtn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	dropBtn.attr({ 'class': 'btn my-btn-dark settings-buttons fa fa-bars fa-inverse', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
 	const divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline ');
 	divDrop.append(dropBtn, divDropMenu);
@@ -155,6 +184,7 @@ loadProjects();
 if (/projects\/\d*/.test(window.location)){
 	$('#addUser').show();
 	$('#addTask').show();
+	$('#viewSettings').show();
 	loadUsers();
 	loadTasks();
 }
@@ -182,6 +212,8 @@ function loadTasks() {
 				for (let i = 0; i < response.tasks.length; i++)
 					addTask(response.tasks[i]);
 				tasks = response.tasks;
+				if (!showCompleted)
+					$('.completed').parent().hide();
 			}
 		}
 	});
@@ -237,6 +269,19 @@ function deleteTask(taskId) {
 	return function(event) {
 		let that = $(this);
 		event.preventDefault();
+		$.ajax({
+			type: 'DELETE',
+			url: 'tasks/' + taskId,
+			success : function(response) {
+				if (response.error === null) {
+					const taskNumber = that.parent().parent().parent().index();
+					$('#taskList').children().eq(taskNumber).remove();
+					tasks.splice(taskNumber, 1);
+				}
+				else
+					console.log(reponse.error)
+			}
+		});
 	}
 }
 
@@ -244,14 +289,7 @@ function completeTask(taskId){
 	return function(event) {
 		let that = $(this);
 		event.preventDefault();
-		const taskNumber = that.parent().parent().parent().index();
-		if (!tasks[taskNumber].completed) {
-			$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
-			$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
-		} else {
-			$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
-			$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
-		}
+		let taskNumber = that.parent().parent().parent().index();
 		$.ajax({
 			type: 'PUT',
 			url: 'tasks/' + taskId,
@@ -259,19 +297,22 @@ function completeTask(taskId){
 			dataType: 'json',
 			contentType: "application/json",
 			success : function(response) {
-				if (response.error === null)
-					tasks[taskNumber] = response.task;
-				else {
-					console.log(error);
+				if (response.error === null) {
 					taskNumber = that.parent().parent().parent().index();
-					if (tasks[taskNumber].completed) {
+					tasks[taskNumber] = response.task;
+					if (response.task.completed) {
 						$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
 						$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
+						if (!showCompleted)
+							that.parent().parent().parent().hide();
 					} else {
 						$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
 						$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
+						if (!showCompleted)
+							that.parent().parent().parent().show();
 					}
-				}
+				} else 
+					console.log(response.error);
 			}
 		});
 	}

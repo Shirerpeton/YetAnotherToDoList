@@ -21,7 +21,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 // uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -30,7 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('trust proxy', 1);
 
 app.use(session({
-	//store: new MSSQLStore(db.config),
+	store: new MSSQLStore(db.config),
     secret: 'someSecret',
     resave: true,
     saveUninitialized: true,
