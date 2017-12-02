@@ -5,7 +5,7 @@ const express = require('express')
 	, sql = require('mssql')
 	, db = require('../bin/db.js');
 
-router.get('/toggle-completed', (req, res) => {
+/* router.get('/toggle-completed', (req, res) => {
 	if (req.session.showCompleted)
 		req.session.showCompleted = false;
 	else
@@ -16,7 +16,7 @@ router.get('/toggle-completed', (req, res) => {
 	});
 	res.json({error: null});
 });
-
+ */
 /* router.get('/pinfo', (req, res) => {
 	const pool = new sql.ConnectionPool(db.config);
 		pool.connect(err => {

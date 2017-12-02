@@ -59,6 +59,18 @@ $("#updateTaskForm").submit(event => {
 
 $("#updateTaskForm").submit(submitUpdateTaskForm);
 
+$("#sortByCompletion").click(event => {
+	event.preventDefault();
+});
+
+$("#sortByName").click(event => {
+	event.preventDefault();
+});
+
+$("#sortByDateOfAdding").click(event => {
+	event.preventDefault();
+});
+
 let users = [], projects = [], tasks = [];
 
 let renamingProject = {
@@ -79,26 +91,43 @@ if (showCompleted)
 else
 	$("#showCompleted").attr('class', 'fa fa-square-o fa-inverse nopad btn my-btn-dark fa-2x');
 
+let sortBy = Cookies.get('sortBy') ? Cookies.get('sortBy') : 'name';
+
+$('#sortBy').text("Sort by " + sortBy);
+
 $("#showCompleted").click(() => {
-	$.ajax({
-		type: 'GET',
-        url: '/toggle-completed',
-        success : function(response) {
-			if (response.error === null) {
-				showCompleted = !showCompleted;
-				if (showCompleted)
-					$("#showCompleted").attr('class', 'fa fa-check-square-o fa-inverse nopad btn my-btn-dark fa-2x');
-				else
-					$("#showCompleted").attr('class', 'fa fa-square-o fa-inverse nopad btn my-btn-dark fa-2x');
-				if (showCompleted)
-					$('.completed').parent().show();
-				else
-					$('.completed').parent().hide();
-			} else
-				console.log(response.error);
-		}
-	});
+	showCompleted = !showCompleted;
+	Cookies.set('showCompleted', showCompleted);
+	if (showCompleted) {
+		$("#showCompleted").attr('class', 'fa fa-check-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+		$('.completed').parent().show();
+	}
+	else {
+		$("#showCompleted").attr('class', 'fa fa-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+		$('.completed').parent().hide();
+	}
 });
+
+$("#sortByName").click(() => {
+	sortBy = "name";
+	updateSorting();
+});
+
+$("#sortByCompletion").click(() => {
+	sortBy = "completion";
+	updateSorting();
+});
+
+$("#sortByDateOfAdding").click(() => {
+	sortBy = "date of adding";
+	updateSorting();
+});
+
+function updateSorting(){
+	Cookies.set('sortBy', sortBy);
+	$('#sortBy').text("Sort by " + sortBy);
+	showTasks();
+}
 
 function addProject(project) {
 	const delLink = $('<a></a>').text('Delete');
@@ -209,14 +238,48 @@ function loadTasks() {
         url: 'tasks',
         success : function(response) {
 			if ((response.error === null) && (response.tasks)) {
-				for (let i = 0; i < response.tasks.length; i++)
-					addTask(response.tasks[i]);
 				tasks = response.tasks;
-				if (!showCompleted)
-					$('.completed').parent().hide();
+				showTasks();
 			}
 		}
 	});
+}
+
+function showTasks() {
+	$('#taskList').children().remove();
+	switch (sortBy){
+		case "name":
+			tasks.sort((task1, task2) => {
+				if (task1.taskName < task2.taskName)
+					return -1;
+				if (task1.taskName > task2.taskName)
+					return 1;
+				return 0;
+			});
+			break;
+		case "completion":
+		tasks.sort((task1, task2) => {
+				if ((!task1.completed) && (task2.completed))
+					return -1;
+				if ((task1.completed) && (!task2.completed))
+					return 1;
+				return 0;
+			});
+			break;
+		case "date of adding":
+			tasks.sort((task1, task2) => {
+				if ((new Date(task1.dateOfAdding)) < (new Date(task2.dateOfAdding)))
+					return -1;
+				if ((new Date(task1.dateOfAdding)) > (new Date(task2.dateOfAdding)))
+					return 1;
+				return 0;
+			});
+			break;
+	}
+	for (let i = 0; i < tasks.length; i++)
+		addTask(tasks[i]);
+	if (!showCompleted)
+		$('.completed').parent().hide();
 }
 
 function deleteProj(projId) {
@@ -300,16 +363,21 @@ function completeTask(taskId){
 				if (response.error === null) {
 					taskNumber = that.parent().parent().parent().index();
 					tasks[taskNumber] = response.task;
-					if (response.task.completed) {
-						$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
-						$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
-						if (!showCompleted)
-							that.parent().parent().parent().hide();
-					} else {
-						$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
-						$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
-						if (!showCompleted)
+					if (sortBy === "Completion")
+						showTasks();
+					else
+					{
+						if (response.task.completed) {
+							$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
+							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
+							if (!showCompleted)
+								that.parent().parent().parent().hide();
+						} else {
+							$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
+							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
+							if (!showCompleted)
 							that.parent().parent().parent().show();
+						}
 					}
 				} else 
 					console.log(response.error);
@@ -465,8 +533,8 @@ function submitTaskForm() {
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
-					addTask(response.task);
 					tasks.push(response.task);
+					showTasks();
 					$('#taskName').attr('class', 'col-10 form-control');
 					$('#addTaskForm').slideToggle();
 					$('#addTask').slideToggle();
@@ -499,8 +567,8 @@ function submitUpdateTaskForm() {
 			success : function(response) {
 				if (response.error === null) {
 					const taskNumber = updatingTask.element.parent().parent().parent().index();
-					$('#taskList').children().eq(taskNumber).children().eq(1).text(response.task.taskName);
 					tasks[taskNumber] = response.task;
+					showTasks();
 					$('#newTaskName').attr('class', 'col-10 form-control');
 					$('#updateTaskForm').slideToggle();
 					$('#addTask').slideToggle();

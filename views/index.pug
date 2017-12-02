@@ -40,7 +40,13 @@ block content
 	div(class='smallpad', id='workspace')
 		div(class='jumbotron border-grey mediumpad w-100 h-100')
 			div(class='text-right', id='viewSettings')
-				label(for='showCompleted', style='padding-right: 1rem') Show completed tasks: 
+				div(class='dropdown d-inline')
+					a(class='dropdown-toggle text-white rounded rightPad mylink', id='sortBy', href='#', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false') Sort by: 
+					div(class='dropdown-menu greyBg', aria-labelledby='sortBy')
+						a(class='dropdown-item greyBg', href='#', id='sortByName') Name
+						a(class='dropdown-item greyBg', href='#', id='sortByCompletion') Completed
+						a(class='dropdown-item greyBg', href='#', id='sortByDateOfAdding') Date of adding
+				label(for='showCompleted', class='rightPad') Show completed tasks: 
 				button(class="fa fa-check-square-o nopad btn my-btn-dark fa-2x", aria-hidden="true", id='showCompleted')
 			ul(class='blanklist', id='taskList')
 				//li

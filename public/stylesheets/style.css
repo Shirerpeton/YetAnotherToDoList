@@ -23,6 +23,10 @@ body, html {
 	right: 33% !important;
 }
 
+.rightPad{
+	padding-right: 1rem;
+}
+
 .hidden{
 	display: none !important;
 }
@@ -103,6 +107,7 @@ body, html {
 .my-btn-dark{
 	border: none;
 	background: none;
+	cursor:pointer;
 }
 
 
