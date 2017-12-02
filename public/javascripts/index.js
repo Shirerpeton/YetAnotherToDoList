@@ -379,7 +379,7 @@ function completeTask(taskId){
 				if (response.error === null) {
 					taskNumber = that.parent().parent().parent().index();
 					tasks[taskNumber] = response.task;
-					if (sortBy === "Completion")
+					if (sortBy === "completion")
 						showTasks();
 					else
 					{
