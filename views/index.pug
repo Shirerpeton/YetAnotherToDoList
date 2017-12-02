@@ -1,71 +1,73 @@
 extends layout
 
 block content
-	div(class='smallpad', id='userspanel')
-		div(class='jumbotron border-grey mediumpad w-100 h-100')
-			ul(class='blanklist', id='userList')
-				//li
+	div(class='w-100 h-100', style='position: fixed')
+		div(class='smallpad', id='userspanel')
+			div(class='jumbotron border-grey mediumpad w-100 h-100')
+				ul(class='blanklist', id='userList')
+					//li
+						div(class='dropdown d-inline')
+							button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+							div(class='dropdown-menu greyBg')
+								a(class='dropdown-item greyBg', href='#') Delete
+						p(class='greyText d-inline')= projUsers[i]
+				button(type='button', id='addUser', class='btn btn-dark btn-block') Add user to this project
+				form(id='addUserForm', method='post')
+					div(class='form-group row')
+						input(id='username', type='text', class='col-10 form-control', name='username', placeholder='Username')
+						button(type='submit', class='col-2 btn btn-dark btn-block', id='submitUser') +
+						div(class='invalid-feedback', id='invUsername') Invalid username!
+		div(class='smallpad' id='projectpanel')
+			div(class='jumbotron border-grey mediumpad w-100 h-100')
+				ul(class='blanklist', id='projectList')
+					//li
+						div(class='dropdown d-inline')
+							button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+							div(class='dropdown-menu greyBg')
+								a(class='dropdown-item greyBg mylink') Rename
+								a(class='dropdown-item greyBg mylink') Delete
+						a(class='mylink d-inline pad-left', data-projId=proj.id, href='/projects/' + proj.projectId + '/')= proj.projectName
+				button(type='button', id='addProj', class='btn btn-dark btn-block') Add project
+				form(id='addProjForm' method='post')
+					div(class='form-group row')
+						input(id='projName', type='text', class='col-10 form-control', name='projName', placeholder='Project name')
+						button(type='submit', class='col-2 btn btn-dark btn-block', id='submitProj') +
+						div(class='invalid-feedback', id='invProj')
+				form(id='renameProjForm', method='post')
+					div(class='form-group row')
+						input(id ='newProjName', type='text', class='col-10 form-control', name='projName', placeholder='New project name')
+						button(type='submit', class='col-2 btn btn-dark btn-block', id='submitNewProjName') +
+						div(class='invalid-feedback', id='invNewProjName')
+		div(class='smallpad', id='taskpanel')
+			div(class='jumbotron border-grey mediumpad w-100 h-100')
+				div(class='text-right', id='viewSettings')
 					div(class='dropdown d-inline')
-						button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-						div(class='dropdown-menu greyBg')
-							a(class='dropdown-item greyBg', href='#') Delete
-					p(class='greyText d-inline')= projUsers[i]
-			button(type='button', id='addUser', class='btn btn-dark btn-block') Add user to this project
-			form(id='addUserForm', method='post')
-				div(class='form-group row')
-					input(id='username', type='text', class='col-10 form-control', name='username', placeholder='Username')
-					button(type='submit', class='col-2 btn btn-dark btn-block', id='submitUser') +
-					div(class='invalid-feedback', id='invUsername') Invalid username!
-	div(class='smallpad' id='projectpanel')
-		div(class='jumbotron border-grey mediumpad w-100 h-100')
-			ul(class='blanklist', id='projectList')
-				//li
-					div(class='dropdown d-inline')
-						button(class='btn btn-dark settings-buttons fa fa-cog', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-						div(class='dropdown-menu greyBg')
-							a(class='dropdown-item greyBg', href='#') Rename
-							a(class='dropdown-item greyBg', href='#') Delete
-					a(class='mylink d-inline pad-left', data-projId=proj.id, href='/projects/' + proj.projectId + '/')= proj.projectName
-			button(type='button', id='addProj', class='btn btn-dark btn-block') Add project
-			form(id='addProjForm' method='post')
-				div(class='form-group row')
-					input(id='projName', type='text', class='col-10 form-control', name='projName', placeholder='Project name')
-					button(type='submit', class='col-2 btn btn-dark btn-block', id='submitProj') +
-					div(class='invalid-feedback', id='invProj')
-			form(id='renameProjForm', method='post')
-				div(class='form-group row')
-					input(id ='newProjName', type='text', class='col-10 form-control', name='projName', placeholder='New project name')
-					button(type='submit', class='col-2 btn btn-dark btn-block', id='submitNewProjName') +
-					div(class='invalid-feedback', id='invNewProjName')
-	div(class='smallpad', id='workspace')
-		div(class='jumbotron border-grey mediumpad w-100 h-100')
-			div(class='text-right', id='viewSettings')
-				div(class='dropdown d-inline')
-					a(class='dropdown-toggle text-white rounded rightPad mylink', id='sortBy', href='#', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false') Sort by: 
-					div(class='dropdown-menu greyBg', aria-labelledby='sortBy')
-						a(class='dropdown-item greyBg', href='#', id='sortByName') Name
-						a(class='dropdown-item greyBg', href='#', id='sortByCompletion') Completed
-						a(class='dropdown-item greyBg', href='#', id='sortByDateOfAdding') Date of adding
-				label(for='showCompleted', class='rightPad') Show completed tasks: 
-				button(class="fa fa-check-square-o nopad btn my-btn-dark fa-2x", aria-hidden="true", id='showCompleted')
-			ul(class='blanklist', id='taskList')
-				//li
-					div(class='dropdown d-inline')
-						button(class='btn btn-dark settings-buttons fa fa-cog greyBg', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-						div(class='dropdown-menu greyBg')
-							a(class='dropdown-item greyBg', href='#') Complete
-							a(class='dropdown-item greyBg', href='#') Rename
-							a(class='dropdown-item greyBg', href='#') Delete
-					p(class='nomar greyText d-inline')= tasks[i]
-			button(type='button', id='addTask', class='btn btn-dark btn-block') Add task
-			form(id='addTaskForm', method='post')
-				div(class='form-group row')
-					input(id='taskName', type='text', class='col-11 form-control', name='taskName', placeholder='Task name')
-					button(type='submit', class='col-1 btn btn-dark btn-block', id='submitTask') +
-					div(class='invalid-feedback', id='invTask')
-			form(id='updateTaskForm', method='post')
-				div(class='form-group row')
-					input(id ='newTaskName', type='text', class='col-11 form-control', name='taskName', placeholder='New task name')
-					button(type='submit', class='col-1 btn btn-dark btn-block', id='submitUpdateTask') +
-					div(class='invalid-feedback', id='invUpdateTask')
+						a(class='dropdown-toggle text-white rounded rightPad mylink', id='sortBy', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false') Sort by: 
+						div(class='dropdown-menu greyBg mylink', aria-labelledby='sortBy')
+							a(class='dropdown-item greyBg mylink', id='sortByName') Name
+							a(class='dropdown-item greyBg mylink', id='sortByCompletion') Completed
+							a(class='dropdown-item greyBg mylink', id='sortByDateOfAdding') Date of adding
+					a(class='greyBg mylink rightPad', id='orderToggle')
+					label(for='showCompleted', class='rightPad') Show completed tasks: 
+					button(class="fa fa-check-square-o nopad btn my-btn-dark fa-2x", aria-hidden="true", id='showCompleted')
+				ul(class='blanklist', id='taskList')
+					//li
+						div(class='dropdown d-inline')
+							button(class='btn btn-dark settings-buttons fa fa-cog greyBg', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+							div(class='dropdown-menu greyBg')
+								a(class='dropdown-item greyBg mylink') Complete
+								a(class='dropdown-item greyBg mylink') Rename
+								a(class='dropdown-item greyBg mylink') Delete
+						p(class='nomar greyText d-inline')= tasks[i]
+				button(type='button', id='addTask', class='btn btn-dark btn-block') Add task
+				form(id='addTaskForm', method='post')
+					div(class='form-group row')
+						input(id='taskName', type='text', class='col-11 form-control', name='taskName', placeholder='Task name')
+						button(type='submit', class='col-1 btn btn-dark btn-block', id='submitTask') +
+						div(class='invalid-feedback', id='invTask')
+				form(id='updateTaskForm', method='post')
+					div(class='form-group row')
+						input(id ='newTaskName', type='text', class='col-11 form-control', name='taskName', placeholder='New task name')
+						button(type='submit', class='col-1 btn btn-dark btn-block', id='submitUpdateTask') +
+						div(class='invalid-feedback', id='invUpdateTask')
 	script(src='/javascripts/index.js')

@@ -71,6 +71,10 @@ $("#sortByDateOfAdding").click(event => {
 	event.preventDefault();
 });
 
+$('#orderToggle').click(event => {
+	event.preventDefault();
+});
+
 let users = [], projects = [], tasks = [];
 
 let renamingProject = {
@@ -92,8 +96,20 @@ else
 	$("#showCompleted").attr('class', 'fa fa-square-o fa-inverse nopad btn my-btn-dark fa-2x');
 
 let sortBy = Cookies.get('sortBy') ? Cookies.get('sortBy') : 'name';
-
 $('#sortBy').text("Sort by " + sortBy);
+
+let order = Cookies.get('order') ? Cookies.get('order') : 'Descending';
+$('#orderToggle').text(order);
+
+$('#orderToggle').click(() => {
+	if (order === "Descending")
+		order = "Ascending";
+	else if (order === "Ascending")
+		order = "Descending";
+	Cookies.set("order", order);
+	$('#orderToggle').text(order);
+	showTasks();
+});
 
 $("#showCompleted").click(() => {
 	showCompleted = !showCompleted;
@@ -131,13 +147,13 @@ function updateSorting(){
 
 function addProject(project) {
 	const delLink = $('<a></a>').text('Delete');
-	delLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
+	delLink.attr('class', 'dropdown-item greyBg mylink');
 	delLink.click(deleteProj(project.projectId));
 	const renameLink = $('<a></a>').text('Rename');
-	renameLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
+	renameLink.attr('class', 'dropdown-item greyBg mylink');
 	renameLink.click(renameProj(project.projectId));
 	const divDropMenu = $('<div></div>');
-	divDropMenu.attr('class', 'dropdown-menu greyBg');
+	divDropMenu.attr('class', 'dropdown-menu greyBg mylink');
 	divDropMenu.append(renameLink);
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
@@ -152,10 +168,10 @@ function addProject(project) {
 
 function addUser(user) {
 	const delLink = $('<a></a>').text('Delete');
-	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
+	delLink.attr('class', 'dropdown-item greyBg mylink');
 	delLink.click(deleteUser(user.username));
 	const divDropMenu = $('<div></div>');
-	divDropMenu.attr('class', 'dropdown-menu greyBg');
+	divDropMenu.attr('class', 'dropdown-menu greyBg mylink');
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
 	dropBtn.attr({ 'class': 'btn my-btn-dark settings-buttons fa fa-bars fa-inverse', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
@@ -169,16 +185,16 @@ function addUser(user) {
 
 function addTask(task) {
 	const completeLink = task.completed ? $('<a></a>').text('Uncomplete') : $('<a></a>').text('Complete');
-	completeLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
+	completeLink.attr('class', 'dropdown-item greyBg mylink');
 	completeLink.click(completeTask(task.taskId));
 	const delLink = $('<a></a>').text('Delete');
-	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
+	delLink.attr('class', 'dropdown-item greyBg mylink');
 	delLink.click(deleteTask(task.taskId));
 	const renameLink = $('<a></a>').text('Rename');
-	renameLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
+	renameLink.attr('class', 'dropdown-item greyBg mylink');
 	renameLink.click(updateTask(task.taskId));
 	const divDropMenu = $('<div></div>');
-	divDropMenu.attr('class', 'dropdown-menu greyBg');
+	divDropMenu.attr('class', 'dropdown-menu greyBg mylink');
 	divDropMenu.append(completeLink);
 	divDropMenu.append(renameLink);
 	divDropMenu.append(delLink);
@@ -251,27 +267,27 @@ function showTasks() {
 		case "name":
 			tasks.sort((task1, task2) => {
 				if (task1.taskName < task2.taskName)
-					return -1;
+					return -1 * (order === "Descending" ? 1 : -1);
 				if (task1.taskName > task2.taskName)
-					return 1;
+					return 1 * (order === "Descending" ? 1 : -1);
 				return 0;
 			});
 			break;
 		case "completion":
 		tasks.sort((task1, task2) => {
 				if ((!task1.completed) && (task2.completed))
-					return -1;
+					return -1 * (order === "Descending" ? 1 : -1);
 				if ((task1.completed) && (!task2.completed))
-					return 1;
+					return 1 * (order === "Descending" ? 1 : -1);
 				return 0;
 			});
 			break;
 		case "date of adding":
 			tasks.sort((task1, task2) => {
 				if ((new Date(task1.dateOfAdding)) < (new Date(task2.dateOfAdding)))
-					return -1;
+					return -1 * (order === "Descending" ? 1 : -1);
 				if ((new Date(task1.dateOfAdding)) > (new Date(task2.dateOfAdding)))
-					return 1;
+					return 1 * (order === "Descending" ? 1 : -1);
 				return 0;
 			});
 			break;
