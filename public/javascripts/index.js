@@ -9,6 +9,8 @@ $('#updateTaskForm').hide();
 $('#addUser').hide();
 $('#addTask').hide();
 
+$('#viewSettings').hide();
+
 $("#addProj").click(function(){
 	$('#addProj').slideToggle();
 	$('#addProjForm').slideToggle();
@@ -57,32 +59,105 @@ $("#updateTaskForm").submit(event => {
 
 $("#updateTaskForm").submit(submitUpdateTaskForm);
 
+$("#sortByCompletion").click(event => {
+	event.preventDefault();
+});
+
+$("#sortByName").click(event => {
+	event.preventDefault();
+});
+
+$("#sortByDateOfAdding").click(event => {
+	event.preventDefault();
+});
+
+$('#orderToggle').click(event => {
+	event.preventDefault();
+});
+
 let users = [], projects = [], tasks = [];
 
 let renamingProject = {
 	id: null,
-	number: null
+	element: null,
+	request: false
 };
 
 let updatingTask = {
 	id: null,
-	number: null
+	element: null,
+	request: false
+}
+
+let showCompleted = (Cookies.get('showCompleted') === 'true');
+if (showCompleted)
+	$("#showCompleted").attr('class', 'fa fa-check-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+else
+	$("#showCompleted").attr('class', 'fa fa-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+
+let sortBy = Cookies.get('sortBy') ? Cookies.get('sortBy') : 'name';
+$('#sortBy').text("Sort by " + sortBy);
+
+let order = Cookies.get('order') ? Cookies.get('order') : 'Descending';
+$('#orderToggle').text(order);
+
+$('#orderToggle').click(() => {
+	if (order === "Descending")
+		order = "Ascending";
+	else if (order === "Ascending")
+		order = "Descending";
+	Cookies.set("order", order);
+	$('#orderToggle').text(order);
+	showTasks();
+});
+
+$("#showCompleted").click(() => {
+	showCompleted = !showCompleted;
+	Cookies.set('showCompleted', showCompleted);
+	if (showCompleted) {
+		$("#showCompleted").attr('class', 'fa fa-check-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+		$('.completed').parent().show();
+	}
+	else {
+		$("#showCompleted").attr('class', 'fa fa-square-o fa-inverse nopad btn my-btn-dark fa-2x');
+		$('.completed').parent().hide();
+	}
+});
+
+$("#sortByName").click(() => {
+	sortBy = "name";
+	updateSorting();
+});
+
+$("#sortByCompletion").click(() => {
+	sortBy = "completion";
+	updateSorting();
+});
+
+$("#sortByDateOfAdding").click(() => {
+	sortBy = "date of adding";
+	updateSorting();
+});
+
+function updateSorting(){
+	Cookies.set('sortBy', sortBy);
+	$('#sortBy').text("Sort by " + sortBy);
+	showTasks();
 }
 
 function addProject(project) {
-	//const projNumber = $('#projectList').children().length;
 	const delLink = $('<a></a>').text('Delete');
-	delLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
+	delLink.attr('class', 'dropdown-item greyBg mylink');
 	delLink.click(deleteProj(project.projectId));
 	const renameLink = $('<a></a>').text('Rename');
-	renameLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
+	renameLink.attr('class', 'dropdown-item greyBg mylink');
 	renameLink.click(renameProj(project.projectId));
 	const divDropMenu = $('<div></div>');
-	divDropMenu.attr('class', 'dropdown-menu greyBg');
+	divDropMenu.attr('class', 'dropdown-menu greyBg mylink');
 	divDropMenu.append(renameLink);
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
-	dropBtn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	dropBtn.attr({ 'class': 'btn my-btn-dark settings-buttons fa fa-bars fa-inverse', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
 	const divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline ');
 	divDrop.append(dropBtn, divDropMenu);
@@ -92,15 +167,14 @@ function addProject(project) {
 }
 
 function addUser(user) {
-	const userNumber = $('#userList').children().length;
 	const delLink = $('<a></a>').text('Delete');
-	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	delLink.click(deleteUser(user.username, userNumber));
+	delLink.attr('class', 'dropdown-item greyBg mylink');
+	delLink.click(deleteUser(user.username));
 	const divDropMenu = $('<div></div>');
-	divDropMenu.attr('class', 'dropdown-menu greyBg');
+	divDropMenu.attr('class', 'dropdown-menu greyBg mylink');
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
-	dropBtn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	dropBtn.attr({ 'class': 'btn my-btn-dark settings-buttons fa fa-bars fa-inverse', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
 	const divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline');
 	divDrop.append(dropBtn, divDropMenu);
@@ -110,23 +184,22 @@ function addUser(user) {
 }
 
 function addTask(task) {
-	const taskNumber = $('#taskList').children().length;
 	const completeLink = task.completed ? $('<a></a>').text('Uncomplete') : $('<a></a>').text('Complete');
-	completeLink.attr({'class': 'dropdown-item greyBg', 'href': '#'});
-	completeLink.click(completeTask(task.taskId, taskNumber));
+	completeLink.attr('class', 'dropdown-item greyBg mylink');
+	completeLink.click(completeTask(task.taskId));
 	const delLink = $('<a></a>').text('Delete');
-	delLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	delLink.click(deleteTask(task.taskId, taskNumber));
+	delLink.attr('class', 'dropdown-item greyBg mylink');
+	delLink.click(deleteTask(task.taskId));
 	const renameLink = $('<a></a>').text('Rename');
-	renameLink.attr({ 'class': 'dropdown-item greyBg', 'href': '#'});
-	renameLink.click(updateTask(task.taskId, taskNumber));
+	renameLink.attr('class', 'dropdown-item greyBg mylink');
+	renameLink.click(updateTask(task.taskId));
 	const divDropMenu = $('<div></div>');
-	divDropMenu.attr('class', 'dropdown-menu greyBg');
+	divDropMenu.attr('class', 'dropdown-menu greyBg mylink');
 	divDropMenu.append(completeLink);
 	divDropMenu.append(renameLink);
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
-	dropBtn.attr({ 'class': 'btn btn-dark settings-buttons fa fa-cog', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
+	dropBtn.attr({ 'class': 'btn my-btn-dark settings-buttons fa fa-bars fa-inverse', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
 	const divDrop = $('<div></div>');
 	divDrop.attr('class', 'dropdown d-inline ');
 	divDrop.append(dropBtn, divDropMenu);
@@ -156,6 +229,7 @@ loadProjects();
 if (/projects\/\d*/.test(window.location)){
 	$('#addUser').show();
 	$('#addTask').show();
+	$('#viewSettings').show();
 	loadUsers();
 	loadTasks();
 }
@@ -180,12 +254,48 @@ function loadTasks() {
         url: 'tasks',
         success : function(response) {
 			if ((response.error === null) && (response.tasks)) {
-				for (let i = 0; i < response.tasks.length; i++)
-					addTask(response.tasks[i]);
 				tasks = response.tasks;
+				showTasks();
 			}
 		}
 	});
+}
+
+function showTasks() {
+	$('#taskList').children().remove();
+	switch (sortBy){
+		case "name":
+			tasks.sort((task1, task2) => {
+				if (task1.taskName < task2.taskName)
+					return -1 * (order === "Descending" ? 1 : -1);
+				if (task1.taskName > task2.taskName)
+					return 1 * (order === "Descending" ? 1 : -1);
+				return 0;
+			});
+			break;
+		case "completion":
+		tasks.sort((task1, task2) => {
+				if ((!task1.completed) && (task2.completed))
+					return -1 * (order === "Descending" ? 1 : -1);
+				if ((task1.completed) && (!task2.completed))
+					return 1 * (order === "Descending" ? 1 : -1);
+				return 0;
+			});
+			break;
+		case "date of adding":
+			tasks.sort((task1, task2) => {
+				if ((new Date(task1.dateOfAdding)) < (new Date(task2.dateOfAdding)))
+					return -1 * (order === "Descending" ? 1 : -1);
+				if ((new Date(task1.dateOfAdding)) > (new Date(task2.dateOfAdding)))
+					return 1 * (order === "Descending" ? 1 : -1);
+				return 0;
+			});
+			break;
+	}
+	for (let i = 0; i < tasks.length; i++)
+		addTask(tasks[i]);
+	if (!showCompleted)
+		$('.completed').parent().hide();
 }
 
 function deleteProj(projId) {
@@ -212,39 +322,53 @@ function deleteProj(projId) {
 	}
 }
 
-function deleteUser(username, userNumber) {
-	return event => {
+function deleteUser(username) {
+	return function(event) {
+		let that = $(this);
 		event.preventDefault();
 		$.ajax({
 			type: 'DELETE',
 			url: 'users/' + username,
 			success : function(response) {
-				if (response.error === null)
+				if (response.error === null) {
+					const userNumber = that.parent().parent().parent().index();
 					$('#userList').children().eq(userNumber).remove();
+					users.splice(userNumber, 1);
+				}
+				else
+					console.log(reponse.error)
 				if (response.reload)
 					window.location.replace('/');
-				users.splice(userNumber, 1);
 			}
 		});
 	}
 }
 
-function deleteTask(taskId, taskNumber) {
-	return event => {
+function deleteTask(taskId) {
+	return function(event) {
+		let that = $(this);
 		event.preventDefault();
+		$.ajax({
+			type: 'DELETE',
+			url: 'tasks/' + taskId,
+			success : function(response) {
+				if (response.error === null) {
+					const taskNumber = that.parent().parent().parent().index();
+					$('#taskList').children().eq(taskNumber).remove();
+					tasks.splice(taskNumber, 1);
+				}
+				else
+					console.log(reponse.error)
+			}
+		});
 	}
 }
 
-function completeTask(taskId, taskNumber){
-	return event => {
+function completeTask(taskId){
+	return function(event) {
+		let that = $(this);
 		event.preventDefault();
-		if (!tasks[taskNumber].completed) {
-			$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
-			$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
-		} else {
-			$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
-			$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
-		}
+		let taskNumber = that.parent().parent().parent().index();
 		$.ajax({
 			type: 'PUT',
 			url: 'tasks/' + taskId,
@@ -252,18 +376,27 @@ function completeTask(taskId, taskNumber){
 			dataType: 'json',
 			contentType: "application/json",
 			success : function(response) {
-				if (response.error === null)
+				if (response.error === null) {
+					taskNumber = that.parent().parent().parent().index();
 					tasks[taskNumber] = response.task;
-				else {
-					console.log(response);
-					if (tasks[taskNumber].completed) {
-						$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
-						$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
-					} else {
-						$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
-						$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
+					if (sortBy === "completion")
+						showTasks();
+					else
+					{
+						if (response.task.completed) {
+							$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
+							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
+							if (!showCompleted)
+								that.parent().parent().parent().hide();
+						} else {
+							$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
+							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
+							if (!showCompleted)
+							that.parent().parent().parent().show();
+						}
 					}
-				}
+				} else 
+					console.log(response.error);
 			}
 		});
 	}
@@ -272,30 +405,32 @@ function completeTask(taskId, taskNumber){
 function renameProj(projId) {
 	return function(event) {
 		event.preventDefault();
-		const projNumber = $(this).parent().parent().parent().index();			
-		console.log($(this));
-		renamingProject.id = projId;
-		renamingProject.number = projNumber;
-		if ($('#addProjForm').is(":visible")) 
-			$('#addProjForm').slideToggle(); 
-		else
-			$('#addProj').slideToggle();
-		$('#renameProjForm').slideToggle();
-		$('#newProjName').focus();
+		if (!renamingProject.request) {
+			renamingProject.id = projId;
+			renamingProject.element = $(this);
+			if ($('#addProjForm').is(":visible")) 
+				$('#addProjForm').slideToggle(); 
+			else
+				$('#addProj').slideToggle();
+			$('#renameProjForm').slideToggle();
+			$('#newProjName').focus();
+		}
 	}
 }
 
-function updateTask(taskId, taskNumber) {
-	return (event) => {
+function updateTask(taskId) {
+	return function(event) {
 		event.preventDefault();
-		updatingTask.id = taskId;
-		updatingTask.number = taskNumber;
-		if ($('#addTaskForm').is(':visible'))
-			$('#addTaskForm').slideToggle();
-		else
-			$('#addTask').slideToggle();
-		$('#updateTaskForm').slideToggle();
-		$('#newTaskName').focus();
+		if (!updatingTask.request) {
+			updatingTask.id = taskId;
+			updatingTask.element = $(this);
+			if ($('#addTaskForm').is(':visible'))
+				$('#addTaskForm').slideToggle();
+			else
+				$('#addTask').slideToggle();
+			$('#updateTaskForm').slideToggle();
+			$('#newTaskName').focus();
+		}
 	}
 }
 
@@ -308,14 +443,16 @@ function submitRenameProjForm() {
 	}
 	else {
 		$('#renameProjForm').off('submit', submitRenameProjForm);
+		renamingProject.request = true;
 		$.ajax({
 			type: 'PUT',
 			url: '/projects/' + renamingProject.id,
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
-					$('#projectList').children().eq(renamingProject.number).children().eq(1).text(response.project.projectName);
-					projects[renamingProject.number] = response.project;
+					const projectNumber = renamingProject.element.parent().parent().parent().index();
+					$('#projectList').children().eq(projectNumber).children().eq(1).text(response.project.projectName);
+					projects[projectNumber] = response.project;
 					$('#newProjName').attr('class', 'col-10 form-control');
 					$('#renameProjForm').slideToggle();
 					$('#addProj').slideToggle();
@@ -326,6 +463,7 @@ function submitRenameProjForm() {
 					$('#invNewProjName').text(response.error);
 				}
 				$('#renameProjForm').submit(submitRenameProjForm);
+				renamingProject.request = false;
 			}
 		});
 	}
@@ -411,8 +549,8 @@ function submitTaskForm() {
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
-					addTask(response.task);
 					tasks.push(response.task);
+					showTasks();
 					$('#taskName').attr('class', 'col-10 form-control');
 					$('#addTaskForm').slideToggle();
 					$('#addTask').slideToggle();
@@ -437,14 +575,16 @@ function submitUpdateTaskForm() {
 	}
 	else {
 		$('#updateTaskForm').off('submit', submitUpdateTaskForm);
+		updatingTask.request = true;
 		$.ajax({
 			type: 'PUT',
 			url: 'tasks/' + updatingTask.id,
 			data: formData,
 			success : function(response) {
 				if (response.error === null) {
-					$('#taskList').children().eq(updatingTask.number).children().eq(1).text(response.task.taskName);
-					tasks[updatingTask.number] = response.task;
+					const taskNumber = updatingTask.element.parent().parent().parent().index();
+					tasks[taskNumber] = response.task;
+					showTasks();
 					$('#newTaskName').attr('class', 'col-10 form-control');
 					$('#updateTaskForm').slideToggle();
 					$('#addTask').slideToggle();
@@ -455,6 +595,7 @@ function submitUpdateTaskForm() {
 					$('#invUpdateTask').text(response.error);
 				}
 				$('#updateTaskForm').submit(submitTaskForm);
+				updatingTask.request = false;
 			}
 		});
 	}

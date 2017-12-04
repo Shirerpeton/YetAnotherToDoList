@@ -1,10 +1,22 @@
 'use strict';
 
-const express = require('express');
-const router = require('./indexTasks.js');
-const sql = require('mssql');
-const db = require('../bin/db.js');
+const express = require('express')
+	, router = require('./indexTasks.js')
+	, sql = require('mssql')
+	, db = require('../bin/db.js');
 
+/* router.get('/toggle-completed', (req, res) => {
+	if (req.session.showCompleted)
+		req.session.showCompleted = false;
+	else
+		req.session.showCompleted = true;
+	res.cookie('showCompleted', req.session.showCompleted, {
+			maxAge: 1000 * 60 * 60 * 24 * 30 * 12,
+			httpOnly: false
+	});
+	res.json({error: null});
+});
+ */
 /* router.get('/pinfo', (req, res) => {
 	const pool = new sql.ConnectionPool(db.config);
 		pool.connect(err => {

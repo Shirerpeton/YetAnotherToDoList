@@ -2,7 +2,7 @@ body {
   background-color: #1e1e1e;
   color: white;
   overflow: hidden;
-  /*font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;*/
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 body, html {
@@ -23,17 +23,21 @@ body, html {
 	right: 33% !important;
 }
 
+.rightPad{
+	padding-right: 1rem;
+}
+
 .hidden{
 	display: none !important;
 }
 
 .mylink{
-	color: rgba(255, 255, 255, 0.6);
+	color: white;
+	cursor: pointer;
 }
 
 .mylink:hover{
 	text-decoration: none;
-	color: rgba(255, 255, 255, 0.9);
 }
 
 .smallmar{
@@ -71,8 +75,8 @@ body, html {
 
 #userspanel{
 	position: absolute;
-	top: 10%;
-	bottom: 60%;
+	top: 0;
+	bottom: 70%;
 	left: 0;
 	right: 70%;
 	z-index: 1;
@@ -83,26 +87,37 @@ body, html {
 	border: 1px solid grey;
 }
 
+
+
 #projectpanel
 {
 	position: absolute;
-	top: 40%;
-	bottom: 0;
+	top: 30%;
+	bottom: 5%;
 	left: 0;
 	right: 70%;
 }
 
-#workspace{
+#taskpanel{
 	position: absolute;
-	top: 10%;
-	bottom: 0;
+	top: 0%;
+	bottom: 5%;
 	left: 30%;
 	right: 0;
 }
 
+.my-btn-dark{
+	border: none;
+	background: none;
+	cursor:pointer;
+}
+
+
+.my-btn-dark:focus {
+	box-shadow: none;
+}
+
 .fwo{
-	/*position: fixed !important;*/
-	/*overflow: scroll !important;*/
 	position: absolute;
     overflow-y: scroll;
 }
@@ -113,24 +128,20 @@ body, html {
 
 .jumbotron {
 	background-color: #323232 !important;
-	/*padding-bottom: 0rem !important;
-	padding-top: 0rem !important;*/
 	margin: 0rem !important;
 	overflow: auto;
 }
 
 .smallpad{
-	padding: 0.3rem !important;
+	padding: 0.3rem;
 }
 
 .mediumpad{
-	padding: 1.5rem !important
+	padding: 1.5rem;
 }
 
 .settings-buttons{
 	padding: 0.5rem;
-	/*padding-top: 0;
-	padding-bottom: 0;*/
 }
 
 .h-100wnavb
