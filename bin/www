@@ -4,10 +4,10 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('ex2:server');
-var http = require('http');
-sql = require('mssql');
+const app = require('../app')
+	, debug = require('debug')('ex2:server')
+	, http = require('http')
+	, sql = require('mssql');
 
 /**
  * Get port from environment and store in Express.
@@ -20,7 +20,7 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+const server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -90,5 +90,6 @@ function onListening() {
   debug('Listening on ' + bind);
 }
 
-module.exports = server;
-module.exports.sqlLib = sql
+//module.exports = server;
+module.exports = createHandler(app);
+//module.exports.sqlLib = sql
