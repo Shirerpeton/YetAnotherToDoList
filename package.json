@@ -5,29 +5,34 @@
   "scripts": {
     "start": "node ./bin/www",
     "devstart": "nodemon ./bin/www",
+    "local": "node scripts/local",
+    "vanilla": "node ./vanilla-server.js",
     "test": "mocha"
   },
   "dependencies": {
     "ajv": "^5.5.0",
-    "azure-function-express": "^1.3.0",
     "bcrypt": "^1.0.3",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-http": "^3.0.0",
+    "compression": "^1.6.2",
     "connect-mssql": "^1.5.0",
     "cookie-parser": "~1.4.3",
+    "cors": "^2.8.3",
     "debug": "~2.6.9",
     "express": "~4.15.5",
     "express-session": "^1.15.6",
     "md5": "^2.2.1",
+    "minimist": "^1.2.0",
     "mocha": "^4.0.1",
     "moment": "^2.19.2",
     "morgan": "~1.9.0",
-    "mssql": "^4.1.0",
     "nodemon": "^1.12.1",
+    "pg": "^7.4.0",
     "pug": "2.0.0-beta11",
     "serve-favicon": "~2.4.5",
     "sinon": "^4.1.2"
-  }
+  },
+  "devDependencies": {}
 }

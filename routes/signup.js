@@ -1,12 +1,12 @@
 const express = require('express')
 	, router = express.Router()
-	, Request = require('tedious').Request
-	, bcrypt = require('../bin/bcryptPromise.js')
-	, sql = require('mssql')
+	, bcrypt = require('bcrypt')
 	, db = require('../bin/db.js')
 	, Ajv = require('ajv')
 	, ajv = new Ajv()
 	, schemas = require('../bin/jsonSchemas.js');
+
+const saltRounds = 10;
 
 const signupValidation = ajv.compile(schemas.signup);
 	
@@ -17,62 +17,47 @@ router.get('/', function(req, res, next) {
 		res.redirect('/');
 });
 
-/* router.get('/info', (req, res, next) => {
-	const pool = new sql.ConnectionPool(db.config);
-		pool.connect(err => {
-			pool.request().query('select * from users', (err, result) => {
-				if (err) throw err;
-				console.log(result.recordset);
-			});
-		});
-}); */
-
 router.post('/', async (req, res, next) => {
 	try {
 		if (!signupValidation(req.body))
-			res.json({"error": "Invalid request!", "errorDetails": signupValidation.errors});
-		else
-		{
+			res.status(400).json({"error": "Invalid request!", "errorDetails": signupValidation.errors});
+		else {
 			const login = req.body.username;
 			const password = req.body.password;
 			const repPassword = req.body.repeatPassword;
-			if (login.length < 4)
-				res.json({error: "Username must be no less than 4 characters long!"});
+			if (login.length < 2)
+				res.status(400).json({error: "Username must be no less than 2 characters long!"});
 			else if (login.length > 20)
-				res.json({error: "Username must be no more than 20 characters long!"});
+				res.status(400).json({error: "Username must be no more than 20 characters long!"});
 			else if (password.length < 6)
-				res.json({error: "Password must be at least 6 characters long!"});
-			else if (password.length > 20)
-				res.json({error: "Password must be no more than 20 characters long!"});
+				res.status(400).json({error: "Password must be at least 6 characters long!"});
 			else if (password !== repPassword)
-				res.json({error: "Passwords must match!"});
-			else 
-			{
-				let result = await db.getUserByUsername(login);
+				res.status(400).json({error: "Passwords must match!"});
+			else  {
+				const result = await db.getUserByUsername(login);
 				if (result)
-					res.json({error: "That username is already taken!"});
-				else
-				{
-					const hash = await bcrypt.promiseHash(password);
-					pool = new sql.ConnectionPool(db.config);
+					res.status(400).json({error: "That username is already taken!"});
+				else {
+					const hash = await bcrypt.hash(password, saltRounds);
+					const client = await db.pool.connect();
 					try {
-						await pool.connect();
-						await pool.request()
-						.input('login', sql.VarChar(20), login)
-						.input('pswHash', sql.VarChar(60), hash)
-						.input('regDate', sql.Date, new Date().toISOString().slice(0, 19).replace('T', ' '))
-						.query('insert into users (username, passwordHash, registration) values (@login, @pswHash, @regDate)');
-						pool.close();
-						res.json({error: null});
+						const query = {
+							text: 'insert into users ("username", "passwordHash", "dateOfRegistration") values ($1, $2, $3)',
+							values: [login, hash, (new Date()).toISOString()]
+						}
+						await client.query(query);
+						res.status(201).json({error: null});
 					} catch (err) {
-						pool.close();
 						throw err;
-					}		
+					} finally {
+						client.release();
+					}	
 				}
 			}
 		}
 	} catch (err) {
 		console.log(err);
+		res.status(500).json({error: 'Iternal error!'});
 	}
 });
 

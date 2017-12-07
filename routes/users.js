@@ -1,13 +1,11 @@
-const express = require('express');
-const router = express.Router();
-const sql = require('mssql');
-const db = require('../bin/db.js');
+const express = require('express')
+	, router = express.Router()
+	, db = require('../bin/db.js');
 
 router.get('/:username', async (req, res, next) => {
 	try {
 		const login = req.session.user;
-		if (login === req.params.username)
-		{
+		if (login === req.params.username) {
 			const pool = new sql.ConnectionPool(db.config);
 			await pool.connect();
 			const result = await pool.request()
@@ -19,7 +17,7 @@ router.get('/:username', async (req, res, next) => {
 			res.render('profile', { title: login, profile: login, regDate: regDate.toDateString(), daysSinceReg: daysSinceReg });
 		}
 		else
-			res.redirect('/');
+			res.status(403).json({error: "Forbidden!"});;
 	} catch (err) {
 		console.log(err);
 	}

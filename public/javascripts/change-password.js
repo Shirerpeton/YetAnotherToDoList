@@ -1,3 +1,5 @@
+'use strict';
+
 $("#passChangeForm").submit(function(event){
     // cancels the form submission
     event.preventDefault();
@@ -6,20 +8,12 @@ $("#passChangeForm").submit(function(event){
 
 function submitForm()
 {
-	const formData = { "password": $('#password').val(), "newPassword": $('#newPassword').val(), "repNewPassword": $('#repNewPassword').val()};
-	console.log(formData.newPassword.length);
-	if (formData.newPassword.length < 6)
-	{
+	const formData = { "password": $('#password').val(), "newPassword": $('#newPassword').val(), "repeatNewPassword": $('#repNewPassword').val()};
+	if (formData.newPassword.length < 6) {
 		$('#newPassword').attr('class', 'form-control is-invalid');
 		$('#invNewPass').text('Password must be at least 6 characters long!');
 		$('#repNewPassword').attr('class', 'form-control');
-	} else if (formData.newPassword.length > 20)
-	{
-		$('#newPassword').attr('class', 'form-control is-invalid');
-		$('#invNewPass').text('Password must be no more than 20 characters long!');
-		$('#repNewPassword').attr('class', 'form-control');
-	} else if (formData.newPassword !== formData.repNewPassword)
-	{
+	} else if (formData.newPassword !== formData.repeatNewPassword) {
 		$('#newPassword').attr('class', 'form-control is-invalid');
 		$('#repNewPassword').attr('class', 'form-control is-invalid');
 		$('#invNewPass').text('');
@@ -29,20 +23,19 @@ function submitForm()
 			type: 'POST',
 			url: '/change-password',
 			data: formData,
-			success : function(response){
-				if (response.error === 'Invalid password!')
-				{
+			complete : res => {
+				if (res.responseJSON.error === 'Invalid password!') {
 					$('#password').attr('class', 'form-control is-invalid');
 					$('#newPassword').attr('class', 'form-control');
 					$('#repNewPassword').attr('class', 'form-control');
 				}
-				else if (response.error === null)
-				{
+				else if (res.responseJSON.error === null) {
 					
 					$('#newPassword').attr('class', 'form-control is-valid');
 					$('#repNewPassword').attr('class', 'form-control is-valid');
 					window.location.replace('/');
-				}	
+				} else
+					console.log(res.responseJSON.error);
 			}
 		});
 }

@@ -1,8 +1,7 @@
 const express = require('express')
 	, bodyParser = require('body-parser')
 	, router = express.Router()
-	, sql = require('mssql')
-	, bcrypt = require('../bin/bcryptPromise.js')
+	, bcrypt = require('bcrypt')
 	, Ajv = require('ajv')
 	, ajv = new Ajv()
 	, schemas = require('../bin/jsonSchemas.js')
@@ -19,29 +18,29 @@ router.get('/', function(req, res, next) {
 
 router.post('/', async (req, res, next) => {
 	try {
-		if (!signinValidation(req.body))
-			res.json({"error": "Invalid request!", "errorDetails": signinValidation.errors});
-		else
-		{
+		if (req.session.user !== undefined)
+			res.status(400).json({error: "You are already logged!"});
+		else if (!signinValidation(req.body))
+			res.status(400).json({"error": "Invalid request!", "errorDetails": signinValidation.errors});
+		else {
 			const login = req.body.username;
 			const password = req.body.password;
 			const result = await db.getUserByUsername(login);
 			if (!result)
-				res.json({ error: 'That user do not exist!' });
-			else
-			{
-				const resultOfComp = await bcrypt.promiseCompare(password, result.passwordHash);
-				if (resultOfComp)
-				{
+				res.status(400).json({ error: 'That user do not exist!' });
+			else {
+				const resultOfComp = await bcrypt.compare(password, result.passwordHash);
+				if (resultOfComp) {
 					req.session.user = login;
-					res.json({ error: null });
+					res.json({error: null});
 				} 
 				else
-					res.json({ error: 'Invalid password!' });
+					res.status(400).json({ error: 'Invalid password!' });
 			}
 		}
 	} catch (err) {
 		console.log(err);
+		res.status(500).json({error: 'Iternal error!'});
 	}
 });
 	

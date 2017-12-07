@@ -11,19 +11,19 @@ $('#addTask').hide();
 
 $('#viewSettings').hide();
 
-$("#addProj").click(function(){
+$("#addProj").click(() => {
 	$('#addProj').slideToggle();
 	$('#addProjForm').slideToggle();
 	$('#projName').focus();
 });
 
-$("#addUser").click(function(){
+$("#addUser").click(() => {
 	$('#addUser').slideToggle();
 	$('#addUserForm').slideToggle();
 	$('#username').focus();
 });
 
-$("#addTask").click(function(){
+$("#addTask").click(() => {
 	$('#addTask').slideToggle();
 	$('#addTaskForm').slideToggle();
 	$('#taskName').focus();
@@ -215,12 +215,13 @@ function loadProjects() {
 	$.ajax({
 		type: 'GET',
         url: '/projects',
-        success : function(response) {
-			if ((response.error === null) && (response.projects)) {
-				for (let i = 0; i < response.projects.length; i++)
-					addProject(response.projects[i]);
-				projects = response.projects;
-			}
+        complete: res => {
+			if ((res.responseJSON.error === null) && (res.responseJSON.projects)) {
+				for (let i = 0; i < res.responseJSON.projects.length; i++)
+					addProject(res.responseJSON.projects[i]);
+				projects = res.responseJSON.projects;
+			} else
+				console.log(res.responseJSON.error);
 		}
 	});
 }
@@ -237,13 +238,14 @@ if (/projects\/\d*/.test(window.location)){
 function loadUsers() {
 	$.ajax({
 		type: 'GET',
-        url: 'users',
-        success : function(response) {
-			if ((response.error === null) && (response.users)) {
-				for (let i = 0; i < response.users.length; i++)
-					addUser(response.users[i]);
-				users = response.users; 
-			}
+		url: 'users',
+		complete: res => {
+			if (res.responseJSON.error === null && res.responseJSON.users) {
+				for (let i = 0; i < res.responseJSON.users.length; i++) 
+					addUser(res.responseJSON.users[i]);
+				users = res.responseJSON.users;
+			} else
+				console.log(res.responseJSON.error);
 		}
 	});
 }
@@ -252,11 +254,12 @@ function loadTasks() {
 	$.ajax({
 		type: 'GET',
         url: 'tasks',
-        success : function(response) {
-			if ((response.error === null) && (response.tasks)) {
-				tasks = response.tasks;
+        complete : res => {
+			if ((res.reponseJSON.error === null) && (res.reponseJSON.tasks)) {
+				tasks = res.reponseJSON.tasks;
 				showTasks();
-			}
+			} else
+				console.log(res.reponseJSON.error);
 		}
 	});
 }
@@ -300,20 +303,19 @@ function showTasks() {
 
 function deleteProj(projId) {
 	return function(event) {
-		let that = $(this);
+		const that = $(this);
 		event.preventDefault();
 		$.ajax({
 			type: 'DELETE',
 			url: '/projects/' + projId,
-			success : function(response){
-				if (response.error === null)
-				{
+			complete: res => {
+				if (res.responseJSON.error === null) {
 					const projNumber = that.parent().parent().parent().index();
 					$('#projectList').children().eq(projNumber).remove();
 					projects.splice(projNumber, 1);
 				}
 				else
-					console.log(response.error);
+					console.log(res.responseJSON.error);
 				const reg = new RegExp('\/projects\/' + projId + '\/');
 				if (reg.test(window.location))
 					window.location.replace('/');
@@ -324,20 +326,20 @@ function deleteProj(projId) {
 
 function deleteUser(username) {
 	return function(event) {
-		let that = $(this);
+		const that = $(this);
 		event.preventDefault();
 		$.ajax({
 			type: 'DELETE',
 			url: 'users/' + username,
-			success : function(response) {
-				if (response.error === null) {
+			complete: res => {
+				if (res.responseJSON.error === null) {
 					const userNumber = that.parent().parent().parent().index();
 					$('#userList').children().eq(userNumber).remove();
 					users.splice(userNumber, 1);
 				}
 				else
-					console.log(reponse.error)
-				if (response.reload)
+					console.log(res.responseJSON.error);
+				if (res.responseJSON.reload)
 					window.location.replace('/');
 			}
 		});
@@ -346,60 +348,54 @@ function deleteUser(username) {
 
 function deleteTask(taskId) {
 	return function(event) {
-		let that = $(this);
+		const that = $(this);
 		event.preventDefault();
 		$.ajax({
 			type: 'DELETE',
 			url: 'tasks/' + taskId,
-			success : function(response) {
-				if (response.error === null) {
+			complete: res => {
+				if (res.responseJSON.error === null) {
 					const taskNumber = that.parent().parent().parent().index();
 					$('#taskList').children().eq(taskNumber).remove();
 					tasks.splice(taskNumber, 1);
 				}
 				else
-					console.log(reponse.error)
+					console.log(res.responseJSON.error)
 			}
 		});
 	}
 }
 
-function completeTask(taskId){
-	return function(event) {
-		let that = $(this);
+function completeTask(taskId) {
+	return function (event) {
+		const that = $(this);
 		event.preventDefault();
 		let taskNumber = that.parent().parent().parent().index();
 		$.ajax({
 			type: 'PUT',
 			url: 'tasks/' + taskId,
-			data: JSON.stringify({'completed' : !tasks[taskNumber].completed}),
+			data: JSON.stringify({ 'completed': !tasks[taskNumber].completed }),
 			dataType: 'json',
 			contentType: "application/json",
-			success : function(response) {
-				if (response.error === null) {
+			complete: res => {
+				if (res.responseJSON.error === null) {
 					taskNumber = that.parent().parent().parent().index();
-					tasks[taskNumber] = response.task;
-					if (sortBy === "completion")
-						showTasks();
-					else
-					{
-						if (response.task.completed) {
+					tasks[taskNumber] = res.responseJSON.task;
+					if (sortBy === "completion") showTasks(); else {
+						if (res.responseJSON.task.completed) {
 							$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline completed');
-							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete')
-							if (!showCompleted)
-								that.parent().parent().parent().hide();
+							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete');
+							if (!showCompleted) that.parent().parent().parent().hide();
 						} else {
 							$('#taskList').children().eq(taskNumber).children().eq(1).attr('class', 'smallmar d-inline greyText');
-							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete')
-							if (!showCompleted)
-							that.parent().parent().parent().show();
+							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete');
+							if (!showCompleted) that.parent().parent().parent().show();
 						}
 					}
-				} else 
-					console.log(response.error);
+				} else console.log(res.responseJSON.error);
 			}
 		});
-	}
+	};
 }
 
 function renameProj(projId) {
@@ -440,27 +436,25 @@ function submitRenameProjForm() {
 		$('#newProjName').attr('class', 'col-10 form-control');
 		$('#renameProjForm').slideToggle();
 		$('#addProj').slideToggle();
-	}
-	else {
+	} else {
 		$('#renameProjForm').off('submit', submitRenameProjForm);
 		renamingProject.request = true;
 		$.ajax({
 			type: 'PUT',
 			url: '/projects/' + renamingProject.id,
 			data: formData,
-			success : function(response) {
-				if (response.error === null) {
+			complete: res => {
+				if (res.responseJSON.error === null) {
 					const projectNumber = renamingProject.element.parent().parent().parent().index();
-					$('#projectList').children().eq(projectNumber).children().eq(1).text(response.project.projectName);
-					projects[projectNumber] = response.project;
+					$('#projectList').children().eq(projectNumber).children().eq(1).text(res.responseJSON.project.projectName);
+					projects[projectNumber] = res.responseJSON.project;
 					$('#newProjName').attr('class', 'col-10 form-control');
 					$('#renameProjForm').slideToggle();
 					$('#addProj').slideToggle();
 					$('#newProjName').val('');
-				}
-				else {
+				} else {
 					$('#newProjName').attr('class', 'col-10 form-control is-invalid');
-					$('#invNewProjName').text(response.error);
+					$('#invNewProjName').text(res.responseJSON.error);
 				}
 				$('#renameProjForm').submit(submitRenameProjForm);
 				renamingProject.request = false;
@@ -475,25 +469,23 @@ function submitUserForm() {
 		$('#username').attr('class', 'col-10 form-control');
 		$('#addUserForm').slideToggle();
 		$('#addUser').slideToggle();
-	}
-	else {
+	} else {
 		$('#addUserForm').off('submit', submitUserForm);
 		$.ajax({
 			type: 'POST',
 			url: 'users/',
 			data: formData,
-			success : function(response) {
-				if (response.error === null) {
-					addUser(response.user);
-					users.push(response.user);
+			complete: res => {
+				if (res.responseJSON.error === null) {
+					addUser(res.responseJSON.user);
+					users.push(res.responseJSON.user);
 					$('#username').attr('class', 'col-10 form-control');
 					$('#addUserForm').slideToggle();
 					$('#addUser').slideToggle();
 					$('#username').val('');
-				}
-				else {
+				} else {
 					$('#username').attr('class', 'col-10 form-control is-invalid');
-					$('#invUsername').text(response.error);
+					$('#invUsername').text(res.responseJSON.error);
 				}
 				$('#addUserForm').submit(submitUserForm);
 			}
@@ -507,26 +499,23 @@ function submitProjForm() {
 		$('#projName').attr('class', 'col-10 form-control');
 		$('#addProjForm').slideToggle();
 		$('#addProj').slideToggle();
-	}
-	else {
+	} else {
 		$('#addProjForm').off('submit', submitProjForm);
 		$.ajax({
 			type: 'POST',
 			url: '/projects',
 			data: formData,
-			success : function(response) {
-				if (response.error === null)
-				{
-					addProject(response.project);
-					projects.push(response.project);
+			complete: res => {
+				if (res.responseJSON.error === null) {
+					addProject(res.responseJSON.project);
+					projects.push(res.responseJSON.project);
 					$('#projName').attr('class', 'col-10 form-control');
 					$('#addProjForm').slideToggle();
 					$('#addProj').slideToggle();
 					$('#projName').val('');
-				}
-				else {
+				} else {
 					$('#projName').attr('class', 'col-10 form-control is-invalid');
-					$('#invProj').text(response.error);
+					$('#invProj').text(res.responseJSON.error);
 				}
 				$('#addProjForm').submit(submitProjForm);
 			}
@@ -535,30 +524,28 @@ function submitProjForm() {
 }
 
 function submitTaskForm() {
-	const formData = { 'taskName': $('#taskName').val()};
+	const formData = { 'taskName': $('#taskName').val() };
 	if (formData.taskName === '') {
 		$('#taskName').attr('class', 'col-10 form-control');
 		$('#addTaskForm').slideToggle();
 		$('#addTask').slideToggle();
-	}
-	else {
+	} else {
 		$('#addTaskForm').off('submit', submitTaskForm);
 		$.ajax({
 			type: 'POST',
 			url: 'tasks/',
 			data: formData,
-			success : function(response) {
-				if (response.error === null) {
-					tasks.push(response.task);
+			complete: res => {
+				if (res.responseJSON.error === null) {
+					tasks.push(res.responseJSON.task);
 					showTasks();
 					$('#taskName').attr('class', 'col-10 form-control');
 					$('#addTaskForm').slideToggle();
 					$('#addTask').slideToggle();
 					$('#taskName').val('');
-				}
-				else {
+				} else {
 					$('#taskName').attr('class', 'col-10 form-control is-invalid');
-					$('#invTask').text(response.error);
+					$('#invTask').text(res.responseJSON.error);
 				}
 				$('#addTaskForm').submit(submitTaskForm);
 			}
@@ -567,34 +554,32 @@ function submitTaskForm() {
 }
 
 function submitUpdateTaskForm() {
-	const formData = {'taskName': $('#newTaskName').val()};
+	const formData = { 'taskName': $('#newTaskName').val() };
 	if (formData.taskName === '') {
 		$('#newTaskName').attr('class', 'col-10 form-control');
 		$('#updateTaskForm').slideToggle();
 		$('#addTask').slideToggle();
-	}
-	else {
+	} else {
 		$('#updateTaskForm').off('submit', submitUpdateTaskForm);
 		updatingTask.request = true;
 		$.ajax({
 			type: 'PUT',
 			url: 'tasks/' + updatingTask.id,
 			data: formData,
-			success : function(response) {
-				if (response.error === null) {
+			complete: res => {
+				if (res.responseJSON.error === null) {
 					const taskNumber = updatingTask.element.parent().parent().parent().index();
-					tasks[taskNumber] = response.task;
+					tasks[taskNumber] = res.responseJSON.task;
 					showTasks();
 					$('#newTaskName').attr('class', 'col-10 form-control');
 					$('#updateTaskForm').slideToggle();
 					$('#addTask').slideToggle();
 					$('#newTaskName').val('');
-				}
-				else {
+				} else {
 					$('#newTaskName').attr('class', 'col-10 form-control is-invalid');
-					$('#invUpdateTask').text(response.error);
+					$('#invUpdateTask').text(res.responseJSON.error);
 				}
-				$('#updateTaskForm').submit(submitTaskForm);
+				$('#updateTaskForm').submit(submitUpdateTaskForm);
 				updatingTask.request = false;
 			}
 		});
