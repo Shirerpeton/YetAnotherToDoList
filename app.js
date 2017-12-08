@@ -6,6 +6,7 @@ const express = require('express')
 	, bodyParser = require('body-parser')
 	, db = require('./bin/db.js')
 	, session = require('express-session')
+	, pgSession = require('connect-pg-simple')(session)
 	, index = require('./routes/index')
 	, logout = require('./routes/logout')
 	, users = require('./routes/users')
@@ -29,7 +30,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('trust proxy', 1);
 
 app.use(session({
-	//store: new MSSQLStore(db.config),
+	store: new pgSession({
+		pool : db.pool
+	}),
     secret: 'someSecret',
     resave: true,
     saveUninitialized: true,

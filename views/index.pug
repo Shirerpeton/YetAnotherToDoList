@@ -26,7 +26,7 @@ block content
 							div(class='dropdown-menu greyBg')
 								a(class='dropdown-item greyBg mylink') Rename
 								a(class='dropdown-item greyBg mylink') Delete
-						a(class='mylink d-inline pad-left', data-projId=proj.id, href='/projects/' + proj.projectId + '/')= proj.projectName
+						a(class='mylink d-inline', data-projId=proj.id, href='/projects/' + proj.projectId + '/')= proj.projectName
 				button(type='button', id='addProj', class='btn btn-dark btn-block') Add project
 				form(id='addProjForm' method='post')
 					div(class='form-group row')
@@ -47,27 +47,40 @@ block content
 							a(class='dropdown-item greyBg mylink', id='sortByName') Name
 							a(class='dropdown-item greyBg mylink', id='sortByCompletion') Completion
 							a(class='dropdown-item greyBg mylink', id='sortByDateOfAdding') Date of adding
+							a(class='dropdown-item greyBg mylink', id='sortByPriority') Priority
 					a(class='greyBg mylink rightPad', id='orderToggle')
 					label(for='showCompleted', class='rightPad') Show completed tasks: 
-					button(class="fa fa-check-square-o nopad btn my-btn-dark fa-2x", aria-hidden="true", id='showCompleted')
+					button(class="fa fa-check-square-o fa-inverse nopad btn my-btn-dark fa-2x", aria-hidden="true", id='showCompleted')
 				ul(class='blanklist', id='taskList')
 					//li
 						div(class='dropdown d-inline')
 							button(class='btn btn-dark settings-buttons fa fa-cog greyBg', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
 							div(class='dropdown-menu greyBg')
 								a(class='dropdown-item greyBg mylink') Complete
-								a(class='dropdown-item greyBg mylink') Rename
+								a(class='dropdown-item greyBg mylink') Change
 								a(class='dropdown-item greyBg mylink') Delete
 						p(class='nomar greyText d-inline')= tasks[i]
 				button(type='button', id='addTask', class='btn btn-dark btn-block') Add task
 				form(id='addTaskForm', method='post')
 					div(class='form-group row')
-						input(id='taskName', type='text', class='col-11 form-control', name='taskName', placeholder='Task name')
-						button(type='submit', class='col-1 btn btn-dark btn-block', id='submitTask') +
-						div(class='invalid-feedback', id='invTask')
+							input(id='taskName', type='text', class='col-9 form-control', name='taskName', placeholder='Task name')
+							button(class='dropdown-toggle btn btn-dark col-2', id='priority', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false') Priority: None
+							div(class='dropdown-menu greyBg mylink', aria-labelledby='priority')
+								a(class='dropdown-item greyBg mylink', id='nonePriority') None
+								a(class='dropdown-item greyBg mylink', id='lowPriority') Low
+								a(class='dropdown-item greyBg mylink', id='mediumPriority') Medium
+								a(class='dropdown-item greyBg mylink', id='highPriority') High
+							button(type='submit', class='btn btn-dark col-1', id='submitTask') +
+							div(class='invalid-feedback', id='invTask')
 				form(id='updateTaskForm', method='post')
 					div(class='form-group row')
-						input(id ='newTaskName', type='text', class='col-11 form-control', name='taskName', placeholder='New task name')
+						input(id ='newTaskName', type='text', class='col-9 form-control', name='taskName', placeholder='New task name')
+						button(class='dropdown-toggle btn btn-dark col-2', id='newPriority', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false') Priority: None
+						div(class='dropdown-menu greyBg mylink', aria-labelledby='newPriority')
+							a(class='dropdown-item greyBg mylink', id='newNonePriority') None
+							a(class='dropdown-item greyBg mylink', id='newLowPriority') Low
+							a(class='dropdown-item greyBg mylink', id='newMediumPriority') Medium
+							a(class='dropdown-item greyBg mylink', id='newHighPriority') High
 						button(type='submit', class='col-1 btn btn-dark btn-block', id='submitUpdateTask') +
 						div(class='invalid-feedback', id='invUpdateTask')
 	script(src='/javascripts/index.js')

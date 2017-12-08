@@ -23,13 +23,17 @@ schemas.signup = {
     "type": "object",
 	"properties": {
 		"username": {
-			"type": "string"
+			"type": "string",
+			"minLength": 2,
+			"maxLength": 20
 		},
 		"password": {
-			"type": "string"
+			"type": "string",
+			"minLength": 6
 		},
 		"repeatPassword": {
-			"type": "string"
+			"type": "string",
+			"minLength": 6
 		}
 	},
 	"required": ["username", "password", "repeatPassword"]
@@ -42,13 +46,16 @@ schemas.changePassword = {
     "type": "object",
 	"properties": {
 		"password": {
-			"type": "string"
+			"type": "string",
+			"minLength": 6
 		},
 		"newPassword": {
-			"type": "string"
+			"type": "string",
+			"minLength": 6
 		},
 		"repeatNewPassword": {
-			"type": "string"
+			"type": "string",
+			"minLength": 6
 		}
 	},
 	"required": ["password", "newPassword", "repeatNewPassword"]
@@ -61,7 +68,9 @@ schemas.addProject = {
     "type": "object",
 	"properties": {
 		"projectName": {
-			"type": "string"
+			"type": "string",
+			"maxLength": 256,
+			"minLength": 1
 		}
 	},
 	"required": ["projectName"]
@@ -74,7 +83,9 @@ schemas.renameProject = {
     "type": "object",
 	"properties": {
 		"projectName": {
-			"type": "string"
+			"type": "string",
+			"maxLength": 256,
+			"minLength": 1
 		}
 	},
 	"required": ["projectName"]
@@ -88,7 +99,9 @@ schemas.addUser = {
     "type": "object",
 	"properties": {
 		"username": {
-			"type": "string"
+			"type": "string",
+			"minLength": 2,
+			"maxLength": 20
 		}
 	},
 	"required": ["username"]
@@ -101,15 +114,12 @@ schemas.addTask = {
     "type": "object",
 	"properties": {
 		"taskName": {
-			"type": "string"
-		},
-		"dueDate": {
-			"type": "string"
+			"type": "string",
+			"maxLength": 256,
+			"minLength": 1
 		},
 		"priority": {
-			"type": "integer",
-			"minimum": 0,
-			"maximum": 2
+			"enum": [null, "low", "medium", "high"]
 		}
 	},
 	"required": ["taskName"]
@@ -128,15 +138,12 @@ schemas.updateTask = {
 	],
 	"properties": {
 		"taskName": {
-			"type": "string"
-		},
-		"dueDate": {
-			"type": "string"
+			"type": "string",
+			"maxLength": 256,
+			"minLength": 1
 		},
 		"priority": {
-			"type": "integer",
-			"minimum": 0,
-			"maximum": 2
+			"enum": [null, "low", "medium", "high"]
 		},
 		"completed": {
 			"type": "boolean"
