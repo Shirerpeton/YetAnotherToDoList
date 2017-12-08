@@ -1,4 +1,6 @@
-schemas = {}
+"use strict";
+
+let schemas = {}
 
 schemas.signin = {
     "$schema": "http://json-schema.org/draft-06/schema#",

@@ -335,36 +335,36 @@ function showTasks() {
 		case "name":
 			tasks.sort((task1, task2) => {
 				if (task1.taskName < task2.taskName)
-					return -(order === "Descending" ? 1 : -1);
+					return -(order === "Descending" ? -1 : 1);
 				else if (task1.taskName > task2.taskName)
-					return (order === "Descending" ? 1 : -1);
+					return (order === "Descending" ? -1 : 1);
 				else return 0;
 			});
 			break;
 		case "completion":
 		tasks.sort((task1, task2) => {
 				if ((!task1.completed) && (task2.completed))
-					return -(order === "Descending" ? 1 : -1);
+					return -(order === "Descending" ? -1 : 1);
 				else if ((task1.completed) && (!task2.completed))
-					return (order === "Descending" ? 1 : -1);
+					return (order === "Descending" ? -1 : 1);
 				else return 0;
 			});
 			break;
 		case "date of adding":
 			tasks.sort((task1, task2) => {
 				if ((new Date(task1.dateOfAdding)) < (new Date(task2.dateOfAdding)))
-					return -(order === "Descending" ? 1 : -1);
+					return -(order === "Descending" ? -1 : 1);
 				else if ((new Date(task1.dateOfAdding)) > (new Date(task2.dateOfAdding)))
-					return (order === "Descending" ? 1 : -1);
+					return (order === "Descending" ? -1 : 1);
 				else return 0;
 			});
 			break;
 		case "priority":
 			tasks.sort((task1, task2) => {
 				if (priorityEnum[task1.priority] < priorityEnum[task2.priority])
-					return -(order === "Descending" ? 1 : -1);
+					return -(order === "Descending" ? -1 : 1);
 				else if (priorityEnum[task1.priority] > priorityEnum[task2.priority])
-					return (order === "Descending" ? 1 : -1);
+					return (order === "Descending" ? -1 : 1);
 				else return 0;
 			});
 			break;
