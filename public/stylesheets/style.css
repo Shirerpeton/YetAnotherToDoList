@@ -10,9 +10,28 @@ body, html {
    height: 100%;
 }
 
-.completed{
-	color: rgba(211, 211, 211, 0.5);
-	text-decoration: line-through;
+.table-hover > tbody > tr:hover {
+	border: 1px solid white;
+	border-bottom: none;
+	background-color: rgb(30, 30, 30);
+}
+
+.table > thead > tr > th{
+	border-top: 2px solid grey;
+	border-bottom: 2px solid grey;
+}
+
+.table > tbody > tr > td {
+	border: none;
+	border-top: 1px solid grey;
+}
+
+.completed {
+	background-color: rgba(80, 80, 80, 0.5);
+}
+
+.completed > td {
+	color: silver;
 }
 
 .center-form{

@@ -51,7 +51,16 @@ block content
 					a(class='greyBg mylink rightPad', id='orderToggle')
 					label(for='showCompleted', class='rightPad') Show completed tasks: 
 					button(class="fa fa-check-square-o fa-inverse nopad btn my-btn-dark fa-2x", aria-hidden="true", id='showCompleted')
-				ul(class='blanklist', id='taskList')
+				table(class="table table-hover", id="taskTable")
+					thead
+						tr
+							th(scope="col", class="col-1")
+							th(scope="col", class="col-1") #
+							th(scope="col", class="col-6") Task name
+							th(scope="col", class="col-3") Date of Adding
+							th(scope="col", class="col-1") Priority
+					tbody(id='taskTableBody')
+				//ul(class='blanklist', id='taskList')
 					//li
 						div(class='dropdown d-inline')
 							button(class='btn btn-dark settings-buttons fa fa-cog greyBg', type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')

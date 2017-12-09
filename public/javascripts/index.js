@@ -5,6 +5,7 @@ $('#addProjForm').hide();
 $('#addUserForm').hide();
 $('#addTaskForm').hide();
 $('#updateTaskForm').hide();
+$('#taskTable').hide();
 
 $('#addUser').hide();
 $('#addTask').hide();
@@ -124,14 +125,11 @@ $('#orderToggle').click(() => {
 $("#showCompleted").click(() => {
 	showCompleted = !showCompleted;
 	Cookies.set('showCompleted', showCompleted);
-	if (showCompleted) {
+	if (showCompleted)
 		$("#showCompleted").removeClass('fa-square-o').addClass('fa-check-square-o');
-		$('.completed').parent().show();
-	}
-	else {
+	else
 		$("#showCompleted").removeClass('fa-check-square-o').addClass('fa-square-o');
-		$('.completed').parent().hide();
-	}
+	showTasks();
 });
 
 $("#sortByName").click(() => {
@@ -248,7 +246,6 @@ function addUser(user) {
 }
 
 function addTask(task) {
-	console.log(task);
 	const completeLink = task.completed ? $('<a></a>').text('Uncomplete') : $('<a></a>').text('Complete');
 	completeLink.attr('class', 'dropdown-item greyBg mylink');
 	completeLink.click(completeTask(task.taskId));
@@ -265,15 +262,23 @@ function addTask(task) {
 	divDropMenu.append(delLink);
 	const dropBtn = $('<button></button>');
 	dropBtn.attr({ 'class': 'btn my-btn-dark settings-buttons fa fa-bars fa-inverse', 'type': 'button', 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false'});
-	const divDrop = $('<div></div>');
+	const divDrop = $('<div/></div>');
 	divDrop.attr('class', 'dropdown d-inline ');
 	divDrop.append(dropBtn, divDropMenu);
 	const taskName = $('<p></p>').text(task.taskName);
-	if (task.completed)
-		taskName.attr({'class': 'smallmar d-inline completed'});
-	else
-		taskName.attr({'class': 'greyText smallmar d-inline'});
-	$('#taskList').append($('<li></li>').append(divDrop, taskName));
+	taskName.attr({'class': 'smallmar d-inline'});
+	const tdButton = $('<td/>').append(divDrop);
+	const tdNumber = $('<td/>').text($('#taskTableBody').children(':visible').length);
+	const tdName = $('<td/>').append(taskName);
+	const tdDateOfAdding = $('<td/>').text(task.dateOfAdding);
+	const tdPriority = $('<td/>').text((task.priority !== null )? task.priority : "none");
+	const tr = $("<tr/>").append(tdButton, tdNumber, tdName, tdDateOfAdding, tdPriority);
+	if (task.completed){
+		tr.addClass('completed');
+		if (!showCompleted)
+			tr.hide();
+	}
+	$('#taskTableBody').append(tr);
 }
 
 function loadProjects() {
@@ -296,6 +301,7 @@ if (/projects\/\d*/.test(window.location)){
 	$('#addUser').show();
 	$('#addTask').show();
 	$('#viewSettings').show();
+	$('#taskTable').show();
 	loadUsers();
 	loadTasks();
 }
@@ -330,7 +336,7 @@ function loadTasks() {
 }
 
 function showTasks() {
-	$('#taskList').children().remove();
+	$('#taskTableBody').children().remove();
 	switch (sortBy){
 		case "name":
 			tasks.sort((task1, task2) => {
@@ -372,7 +378,7 @@ function showTasks() {
 	for (let i = 0; i < tasks.length; i++)
 		addTask(tasks[i]);
 	if (!showCompleted)
-		$('.completed').parent().hide();
+		$('.completed').hide();
 }
 
 function deleteProj(projId) {
