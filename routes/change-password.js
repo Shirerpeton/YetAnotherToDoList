@@ -30,15 +30,11 @@ router.post('/', async (req, res, next) => {
 				const password = req.body.password;
 				const newPassword = req.body.newPassword;
 				const repNewPassword = req.body.repeatNewPassword;
-				if (newPassword.length < 6)
-					res.status(400).json({error: "Password must be at least 6 characters long!"});
-				else if (newPassword.length > 20)
-					res.status(400).json({error: "Password must be no more than 20 characters long!"});
-				else if (newPassword !== repNewPassword)
+				if (newPassword !== repNewPassword)
 					res.status(400).json({error: 'Passwords must match!'});
 				else {
 					const result = await db.getUserByUsername(login);
-					const resultOfComp = await bcrypt.promiseCompare(password, result.passwordHash);
+					const resultOfComp = await bcrypt.compare(password, result.passwordHash);
 					if (!resultOfComp)
 						res.status(400).json({error: 'Invalid password!'});
 					else {
@@ -46,7 +42,7 @@ router.post('/', async (req, res, next) => {
 						const client = await db.pool.connect();
 						try {
 							const query = {
-								text: 'update users set passwordHash = $1 where username = $2',
+								text: 'update users set "passwordHash" = $1 where "username" = $2',
 								values: [hash, login]
 							}
 							await client.query(query);

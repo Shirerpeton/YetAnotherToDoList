@@ -14,7 +14,7 @@ function submitForm()
 	$('#repNewpassword').removeClass('is-invalid');
 	$('#password').removeClass('is-valid');
 	$('#newPassword').removeClass('is-valid');
-	$('#repNewpassword').removeClass('is-valid');
+	$('#repNewPassword').removeClass('is-valid');
 	$('#invNewPass').text('');
 	$('#invRepNewPass').text('');
 	if (formData.newPassword.length < 6) {
@@ -22,7 +22,7 @@ function submitForm()
 		$('#invNewPass').text('Password must be at least 6 characters long!');
 	} else if (formData.newPassword !== formData.repeatNewPassword) {
 		$('#newPassword').addClass('is-invalid');
-		$('#repNewpassword').addClass('is-invalid');
+		$('#repNewPassword').addClass('is-invalid');
 		$('#invRepNewPass').text('Passwords must match!');
 	} else
 		$.ajax({

@@ -5,8 +5,7 @@ const chai = require('chai')
 	, sinon = require('sinon')
 	, chaiHttp = require('chai-http')
 	, chaiAsPromised = require("chai-as-promised")
-	, sql = require('mssql')
-	, bcrypt = require('../bin/bcryptPromise.js')
+	, bcrypt = require('bcrypt')
 	, db = require('../bin/db.js');
 
 chai.use(chaiHttp);
@@ -38,7 +37,7 @@ describe('/users/sign-in', () => {
 		describe('while logged', () => {
 			it('redirects to main page', done => {
 				sandbox.stub(db, 'getUserByUsername').withArgs('testUsername').returns({username: 'testUsername', passwordHash: 'testHash'});
-				sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
+				sandbox.stub(bcrypt, 'compare').withArgs('testPassword', 'testHash').returns(true);
 				let agent = chai.request.agent(server)
 				agent
 				.post('/sign-in')
@@ -46,7 +45,7 @@ describe('/users/sign-in', () => {
 				.then(res => {
 					expect(res.body.error).to.be.null;
 				}).then(() => {
-					return agent.get('/users/sign-in').redirects(0)
+					return agent.get('/sign-in').redirects(0)
 				}).catch(err => {
 					expect(err.response).to.have.status(302).and.header('Location', '/');
 				}).then(done).catch(console.log);
@@ -56,15 +55,15 @@ describe('/users/sign-in', () => {
 	describe('post', () => {
 		beforeEach('stub functions', () => {
 			sandbox.stub(db, 'getUserByUsername').withArgs('testUsername').returns({username: 'testUsername', passwordHash: 'testHash'});
-			sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
+			sandbox.stub(bcrypt, 'compare').withArgs('testPassword', 'testHash').returns(true);
 		});
 		describe('with invalid request', () => {
-			it('loggs user into system', done => {
+			it('sends json with proper error', done => {
 				chai.request(server)
 				.post('/sign-in')
 				.send({myUsername: 'testUsername', muPassword: 'testPassword'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid request!');
 					done();
 				});
@@ -88,7 +87,7 @@ describe('/users/sign-in', () => {
 				.post('/sign-in')
 				.send({username: 'wrongUsername', password: 'testPassword'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('That user do not exist!');
 					done();
 				});
@@ -100,7 +99,7 @@ describe('/users/sign-in', () => {
 				.post('/sign-in')
 				.send({username: 'testUsername', password: 'wrongPassword'})
 				.end((err, res) => {
-					expect(err).to.be.null;
+					expect(err).to.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid password!');
 					done();
 				});

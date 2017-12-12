@@ -30,9 +30,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('trust proxy', 1);
 
 app.use(session({
-	store: new pgSession({
-		pool : db.pool
-	}),
+	//store: new pgSession({
+	//	pool : db.pool
+	//}),
     secret: 'someSecret',
     resave: true,
     saveUninitialized: true,

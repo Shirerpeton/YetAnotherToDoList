@@ -5,8 +5,7 @@ const chai = require('chai')
 	, sinon = require('sinon')
 	, chaiHttp = require('chai-http')
 	, chaiAsPromised = require("chai-as-promised")
-	, sql = require('mssql')
-	, bcrypt = require('../bin/bcryptPromise.js')
+	, bcrypt = require('bcrypt')
 	, db = require('../bin/db.js');
 
 chai.use(chaiHttp);
@@ -14,35 +13,21 @@ chai.use(chaiHttp);
 let sandbox = sinon.sandbox.create();
 let server;
 
-let request = {
-	input: function() { return this; },
-	query: sandbox.stub()
+let client = {
+	query: sandbox.stub(),
+	release: sandbox.spy()
 };
 
-let transaction = {
-	request: () => { return request; },
-	begin: sandbox.spy(),
-	commit: sandbox.spy(),
-	rollback: sandbox.spy()
-};
-
-let pool = {
-	connect: sandbox.spy(),
-	request: () => { return request; },
-	close: sandbox.spy(),
-	transaction: () => { return transaction; }
-};
-
-describe('index page', () => {
+describe('update task', () => {
 	describe('while logged', () => {
 		let agent;
 		beforeEach('logging', done => {
 			server = require('../bin/www');
-			sandbox.stub(sql, 'ConnectionPool').returns(pool);
+			sandbox.stub(db.pool, 'connect').returns(client);
+			sandbox.stub(db, 'getUserByUsername').withArgs('testUsername').returns({username: 'testUsername', passwordHash: 'testHash'});
 			sandbox.stub(db, 'isUserInTheProject');
 			sandbox.stub(db, 'isTaskInTheProject');
-			sandbox.stub(db, 'getUserByUsername').withArgs('testUsername').returns({username: 'testUsername', passwordHash: 'testHash'});
-			sandbox.stub(bcrypt, 'promiseCompare').withArgs('testPassword', 'testHash').returns(true);
+			sandbox.stub(bcrypt, 'compare').withArgs('testPassword', 'testHash').returns(true);
 			agent = chai.request.agent(server);
 			agent
 			.post('/sign-in')
@@ -50,19 +35,15 @@ describe('index page', () => {
 			.then(res => {
 				expect(res.body.error).to.be.null;
 				db.getUserByUsername.reset();
-				bcrypt.promiseCompare.reset();
+				bcrypt.compare.reset();
 				done();
 			});
 		});
 		afterEach('reset spies and stubs', done => {
-			request.query.reset();
-			pool.connect.reset();
-			pool.close.reset();
-			transaction.begin.reset();
-			transaction.commit.reset();
-			transaction.rollback.reset();
-			sandbox.reset();
 			sandbox.restore();
+			sandbox.reset();
+			client.query.reset();
+			client.release.reset();
 			server.close();
 			done();
 		});
@@ -74,10 +55,6 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid request!');
-					expect(db.isUserInTheProject.called).to.be.false;
-					expect(pool.connect.called).to.be.false;
-					expect(pool.close.called).to.be.false;
-					expect(request.query.called).to.be.false;
 					done();
 				});
 			});
@@ -90,10 +67,6 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid request!');
-					expect(db.isUserInTheProject.called).to.be.false;
-					expect(pool.connect.called).to.be.false;
-					expect(pool.close.called).to.be.false;
-					expect(request.query.called).to.be.false;
 					done();
 				});
 			});
@@ -106,11 +79,6 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid project ID!');
-					expect(db.isUserInTheProject.called).to.be.false;
-					expect(db.isTaskInTheProject.called).to.be.false;
-					expect(pool.connect.called).to.be.false;
-					expect(pool.close.called).to.be.false;
-					expect(request.query.called).to.be.false;
 					done();
 				});
 			});
@@ -123,11 +91,6 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.be.have.status(400);
 					expect(res.body.error).to.be.equal('Invalid task ID!');
-					expect(db.isUserInTheProject.called).to.be.false;
-					expect(db.isTaskInTheProject.called).to.be.false;
-					expect(pool.connect.called).to.be.false;
-					expect(pool.close.called).to.be.false;
-					expect(request.query.called).to.be.false;
 					done();
 				});
 			});
@@ -141,11 +104,6 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.have.status(403);
 					expect(res.body.error).to.be.equal('You are not in this project!');
-					expect(db.isUserInTheProject.calledOnce).to.be.true;
-					expect(db.isTaskInTheProject.called).to.be.false;
-					expect(pool.connect.called).to.be.false;
-					expect(pool.close.called).to.be.false;
-					expect(request.query.called).to.be.false;
 					done();
 				});
 			});
@@ -160,30 +118,6 @@ describe('index page', () => {
 				.end((err, res) => {
 					expect(err).to.have.status(404);
 					expect(res.body.error).to.be.equal('This task not in the project!');
-					expect(db.isUserInTheProject.calledOnce).to.be.true;
-					expect(db.isTaskInTheProject.calledOnce).to.be.true;
-					expect(pool.connect.called).to.be.false;
-					expect(pool.close.called).to.be.false;
-					expect(request.query.called).to.be.false;
-					done();
-				});
-			});
-		});
-		describe('put to "/projects/0/tasks/0" with empty task name', () => {
-			it('sends json with proper error', done => {
-				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
-				db.isTaskInTheProject.withArgs(0, 0).returns(true);
-				agent
-				.put('/projects/0/tasks/0')
-				.send({taskName: ""})
-				.end((err, res) => {
-					expect(err).to.have.status(400);
-					expect(res.body.error).to.be.equal('Task name can not be empty!');
-					expect(db.isUserInTheProject.calledOnce).to.be.true;
-					expect(db.isTaskInTheProject.calledOnce).to.be.true;
-					expect(pool.connect.called).to.be.false;
-					expect(pool.close.called).to.be.false;
-					expect(request.query.called).to.be.false;
 					done();
 				});
 			});
@@ -192,7 +126,7 @@ describe('index page', () => {
 			it('updates task and sends json without errors', done => {
 				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
 				db.isTaskInTheProject.withArgs(0, 0).returns(true);
-			request.query.onFirstCall().returns({recordset: [{taskName: 'oldTestTaskName', dateOfAdding: 'someDate', dueDate: 'someOtherDate', priority: null, completed: false}]});
+				client.query.onFirstCall().returns({rows: [{taskName: 'oldTestTaskName', dateOfAdding: 'someDate', priority: null, completed: false}]});
 				agent
 				.put('/projects/0/tasks/0')
 				.send({taskName: "newTestTaskName"})
@@ -202,14 +136,6 @@ describe('index page', () => {
 					expect(res.body.task.taskName).to.be.equal('newTestTaskName');
 					expect(res.body.task.taskId).to.be.equal(0);
 					expect(res.body.task.dateOfAdding).to.be.equal('someDate');
-					expect(res.body.task.dueDate).to.be.equal('someOtherDate');
-					expect(res.body.task.priority).to.be.null;
-					expect(res.body.task.completed).to.be.false;
-					expect(db.isUserInTheProject.calledOnce).to.be.true;
-					expect(db.isTaskInTheProject.calledOnce).to.be.true;
-					expect(pool.connect.called).to.be.true;
-					expect(pool.close.called).to.be.true;
-					expect(request.query.called).to.be.true;
 					done();
 				});
 			});
@@ -218,24 +144,17 @@ describe('index page', () => {
 			it('updates task and sends json without errors', done => {
 				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
 				db.isTaskInTheProject.withArgs(0, 0).returns(true);
-				request.query.onFirstCall().returns({recordset: [{taskName: 'oldTestTaskName', dateOfAdding: 'someDate', dueDate: 'someOtherDate', priority: null, completed: false}]});
+				client.query.onFirstCall().returns({rows: [{taskName: 'oldTestTaskName', dateOfAdding: 'someDate', priority: 'low', completed: false}]});
 				agent
 				.put('/projects/0/tasks/0')
-				.send({taskName: "newTestTaskName", completed: true, priority: 2})
+				.send({taskName: "newTestTaskName", completed: true, priority: 'low'})
 				.end((err, res) => {
 					expect(err).to.be.null;
 					expect(res.body.error).to.be.null;
 					expect(res.body.task.taskName).to.be.equal('newTestTaskName');
 					expect(res.body.task.taskId).to.be.equal(0);
 					expect(res.body.task.dateOfAdding).to.be.equal('someDate');
-					expect(res.body.task.dueDate).to.be.equal('someOtherDate');
-					expect(res.body.task.priority).to.be.equal(2);
-					expect(res.body.task.completed).to.be.true;
-					expect(db.isUserInTheProject.calledOnce).to.be.true;
-					expect(db.isTaskInTheProject.calledOnce).to.be.true;
-					expect(pool.connect.called).to.be.true;
-					expect(pool.close.called).to.be.true;
-					expect(request.query.called).to.be.true;
+					expect(res.body.task.priority).to.be.equal('low');
 					done();
 				});
 			});
@@ -244,18 +163,13 @@ describe('index page', () => {
 			it('sends json with proper error', done => {
 				db.isUserInTheProject.withArgs('testUsername', 0).returns(true);
 				db.isTaskInTheProject.withArgs(0, 0).returns(true);
-				request.query.onFirstCall().throws('Database error!');
+				client.query.onFirstCall().throws('Database error!');
 				agent
 				.put('/projects/0/tasks/0')
-				.send({taskName: "newTestTaskName", completed: true, priority: 2})
+				.send({taskName: "newTestTaskName", completed: true, priority: 'low'})
 				.end((err, res) => {
 					expect(err).to.have.status(500);
 					expect(res.body.error).to.be.equal('Iternal error!');
-					expect(db.isUserInTheProject.calledOnce).to.be.true;
-					expect(db.isTaskInTheProject.calledOnce).to.be.true;
-					expect(pool.connect.called).to.be.true;
-					expect(pool.close.called).to.be.true;
-					expect(request.query.called).to.be.true;
 					done();
 				});
 			});

@@ -48,8 +48,7 @@ schemas.changePassword = {
     "type": "object",
 	"properties": {
 		"password": {
-			"type": "string",
-			"minLength": 6
+			"type": "string"
 		},
 		"newPassword": {
 			"type": "string",

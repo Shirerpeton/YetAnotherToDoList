@@ -435,8 +435,8 @@ function deleteTask(taskId) {
 			url: 'tasks/' + taskId,
 			complete: res => {
 				if (res.responseJSON.error === null) {
-					const taskNumber = that.parent().parent().parent().index();
-					$('#taskList').children().eq(taskNumber).remove();
+					const taskNumber = that.parent().parent().parent().parent().index();
+					$('#taskTableBody').children().eq(taskNumber).remove();
 					tasks.splice(taskNumber, 1);
 				}
 				else
@@ -450,7 +450,7 @@ function completeTask(taskId) {
 	return function (event) {
 		const that = $(this);
 		event.preventDefault();
-		let taskNumber = that.parent().parent().parent().index();
+		let taskNumber = that.parent().parent().parent().parent().index();
 		$.ajax({
 			type: 'PUT',
 			url: 'tasks/' + taskId,
@@ -459,19 +459,9 @@ function completeTask(taskId) {
 			contentType: "application/json",
 			complete: res => {
 				if (res.responseJSON.error === null) {
-					taskNumber = that.parent().parent().parent().index();
+					taskNumber = that.parent().parent().parent().parent().index();
 					tasks[taskNumber] = res.responseJSON.task;
-					if (sortBy === "completion") showTasks(); else {
-						if (res.responseJSON.task.completed) {
-							$('#taskList').children().eq(taskNumber).children().eq(1).removeClass('greyText').addClass('completed');
-							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Uncomplete');
-							if (!showCompleted) that.parent().parent().parent().hide();
-						} else {
-							$('#taskList').children().eq(taskNumber).children().eq(1).removeClass('completed').addClass('greyText');
-							$('#taskList').children().eq(taskNumber).children().eq(0).children().eq(1).children().eq(0).text('Complete');
-							if (!showCompleted) that.parent().parent().parent().show();
-						}
-					}
+					showTasks();
 				} else console.log(res.responseJSON.error);
 			}
 		});
@@ -499,7 +489,7 @@ function updateTask(task) {
 		event.preventDefault();
 		if (!updatingTask.request) {
 			updatingTask.id = task.taskId;
-			updatingTask.element = $(this);
+			updatingTask.element = $(this).parent().parent().parent().parent();
 			if (!$('#updateTaskForm').is(':visible')) {
 				if ($('#addTaskForm').is(':visible'))
 					$('#addTaskForm').slideToggle();
@@ -669,7 +659,7 @@ function submitUpdateTaskForm() {
 			data: JSON.stringify(formData),
 			complete: res => {
 				if (res.responseJSON.error === null) {
-					const taskNumber = updatingTask.element.parent().parent().parent().index();
+					const taskNumber = updatingTask.element.index();
 					tasks[taskNumber] = res.responseJSON.task;
 					showTasks();
 					$('#updateTaskForm').slideToggle();

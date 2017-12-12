@@ -6,20 +6,26 @@ router.get('/:username', async (req, res, next) => {
 	try {
 		const login = req.session.user;
 		if (login === req.params.username) {
-			const pool = new sql.ConnectionPool(db.config);
-			await pool.connect();
-			const result = await pool.request()
-			.input('login', sql.VarChar(20), login)
-			.query("select DATEDIFF(SECOND,{d '1970-01-01'}, users.registration) as regDate from users where username = @login");
-			pool.close();
-			const regDate = new Date (result.recordset[0].regDate * 1000);
-			const daysSinceReg = Math.floor((new Date() - regDate) / 1000 / 64 / 64 / 24);
-			res.render('profile', { title: login, profile: login, regDate: regDate.toDateString(), daysSinceReg: daysSinceReg });
+			const client = await db.pool.connect();
+			try {
+				const query = {
+					text: 'select users."dateOfRegistration" from users where username = $1',
+					values: [login]
+				};
+				const {rows} = await client.query(query);
+				const daysSinceReg = Math.floor(((new Date()) - rows[0].dateOfRegistration) / (1000 * 60 * 60 * 24));
+				res.render('profile', { title: login, profile: login, regDate: rows[0].dateOfRegistration.toDateString(), daysSinceReg: daysSinceReg });
+			} catch (err) {
+				throw(err)
+			} finally {
+				client.release();
+			}
 		}
 		else
-			res.status(403).json({error: "Forbidden!"});;
+			res.status(403).json({error: "Forbidden!"});
 	} catch (err) {
 		console.log(err);
+		res.status(500).json({error: "Iternal error!"});
 	}
 });
 
